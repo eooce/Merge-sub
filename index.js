@@ -36,7 +36,7 @@ app.get('/su', (req, res) => {
   res.setHeader('Content-Type', 'application/octet-stream');
   res.send(mergedSubscription);
 });
-
+//静态伪装网页
 app.use(express.static(__dirname));
 
 app.listen(port, () => {
