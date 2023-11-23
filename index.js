@@ -40,26 +40,39 @@ async function fetchSubscriptionContent(subscription) {
 }
 
 async function generateMergedSubscription() {
-  const mergedContent = [];
-  for (const subscription of subscriptions) {
-    const subscriptionContent = await fetchSubscriptionContent(subscription);
-    if (subscriptionContent) {
-      const decodedContent = decodeBase64Content(subscriptionContent);
-      mergedContent.push(decodedContent);
+  try {
+    const mergedContent = [];
+    for (const subscription of subscriptions) {
+      const subscriptionContent = await fetchSubscriptionContent(subscription);
+      if (subscriptionContent) {
+        const decodedContent = decodeBase64Content(subscriptionContent);
+        mergedContent.push(decodedContent);
+      }
     }
+    return mergedContent.join('\n'); // 合并后的每个子订阅内容以换行连接
+  } catch (error) {
+    console.error(`Error generating merged subscription: ${error}`);
+    throw error;
   }
-  return mergedContent.join('\n');
 }
 
-
 app.get('/sum', async (req, res) => {
-  const mergedSubscription = await generateMergedSubscription();
-  res.setHeader('Content-Type', 'application/octet-stream');
-  res.send(mergedSubscription);
+  try {
+    const mergedSubscription = await generateMergedSubscription();
+    const base64Content = Buffer.from(mergedSubscription).toString('base64');
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.send(`${base64Content}`);
+  } catch (error) {
+    console.error(`Error handling /sum route: ${error}`);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-app.use(express.static(__dirname));
+//http路由
+app.get("/", function(req, res) {
+  res.send("Hello world!");
+});
 
 app.listen(port, () => {
   console.log(`Total server is running on port ${port}`);
-});
+}); 
