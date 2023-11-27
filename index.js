@@ -41,20 +41,31 @@ async function fetchSubscriptionContent(subscription) {
 
 async function generateMergedSubscription() {
   try {
-    const mergedContent = [];
-    for (const subscription of subscriptions) {
-      const subscriptionContent = await fetchSubscriptionContent(subscription);
-      if (subscriptionContent) {
-        const decodedContent = decodeBase64Content(subscriptionContent);
-        mergedContent.push(decodedContent);
+    const promises = subscriptions.map(async (subscription) => {
+      try {
+        const subscriptionContent = await fetchSubscriptionContent(subscription);
+        if (subscriptionContent) {
+          const decodedContent = decodeBase64Content(subscriptionContent);
+          return decodedContent;
+        }
+      } catch (error) {
+        console.error(`Error fetching subscription content: ${error}`);
       }
-    }
-    return mergedContent.join('\n'); // 合并后的每个子订阅内容以换行连接
+      return null;
+    });
+
+    const mergedContentArray = await Promise.all(promises);
+    const mergedContent = mergedContentArray.filter(content => content !== null).join('\n');
+    return mergedContent;
   } catch (error) {
     console.error(`Error generating merged subscription: ${error}`);
     throw error;
   }
 }
+
+app.get("/", function(req, res) {
+  res.send("Hello world!");
+});
 
 app.get('/sum', async (req, res) => {
   try {
@@ -68,11 +79,6 @@ app.get('/sum', async (req, res) => {
   }
 });
 
-//http路由
-app.get("/", function(req, res) {
-  res.send("Hello world!");
-});
-
 app.listen(port, () => {
   console.log(`Total server is running on port ${port}`);
-}); 
+});
