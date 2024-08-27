@@ -13,7 +13,8 @@ const subscriptions = [
   'https://www.bing.com/sub',         // 此处备注名称
   'https://www.sina.com/sub',         // 此处备注名称
   'https://www.yahoo.com/sub',        // 此处备注名称
-  'https://www.sougou.com/sub',       // 此处备注名称
+  'https://www.sougou.com/sub'        // 此处备注名称
+  
    // 继续添加更多订阅链接
 ];
 
