@@ -1,18 +1,18 @@
 {
-    "name": "sum-sub",
+    "name": "merge-sub",
     "version": "1.0.0",
     "description": "nodejs",
     "main": "index.js",
-    "author": "eoovve",
-    "repository": "",
+    "author": "eooce",
+    "repository": "https://github.com/eooce/Merge-sub",
     "license": "MIT",
     "private": false,
     "scripts": {
       "start": "node index.js"
     },
     "dependencies": {
-      "express": "^4.18.2",
-        "axios": "^1.6.0"
+      "express": "latest",
+        "axios": "latest"
     },
     "engines": {
       "node": ">=14"
