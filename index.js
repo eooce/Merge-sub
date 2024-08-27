@@ -62,9 +62,8 @@ function replaceAddressAndPort(content) {
             const updatedVmess = Buffer.from(JSON.stringify(vmessObj)).toString('base64');
             return `vmess://${updatedVmess}`;
         } else if (line.startsWith('vless://') || line.startsWith('trojan://')) {
-            // 使用正则表达式匹配并替换 IP 和端口
-            return line.replace(/(@)([\d.]+):(\d+)/, (match, atSymbol, ip, port) => {
-                return `${atSymbol}${CFIP}:${CFPORT}`;
+            return line.replace(/(@[\w.-]+):(\d+)/, (match, atSymbolAndDomain, port) => {
+            return `${atSymbolAndDomain}:${CFPORT}`;
             });
         }
 
