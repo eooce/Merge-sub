@@ -1,10 +1,10 @@
-// 可带参数访问：http://ip:端口/sub?CFIP=优选ip&CFPORT=优选ip端口
-// 例如：http://192.168.1.1:10000/sub?CFIP=47.75.222.188&CFPORT=7890
+// 订阅：workers域名/sub  sub路径可自定义
+// 可带参数：workers域名/sub?CFIP=优选ip&CFPORT=优选ip端口
+// 例如：https://test.abc.workers.dev/sub?CFIP=47.75.222.188&CFPORT=7890
 
 let CFIP = "www.visa.com.tw";  // 优选ip或优选域名
 let CFPORT = "443";            // 优选ip或有序域名对应的端口
 const SUB_PATH = '/sub';       // 访问路径
-
 
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request));
