@@ -11,13 +11,13 @@
 //     -d '{"nodes": ["vless://","vmess://","tuic://","hy2://"]}'
 
 // Cloudflare API 配置
-const CLOUDFLARE_API_TOKEN = '123';    // 替换为你的 Cloudflare API Token
-const CLOUDFLARE_ACCOUNT_ID = '8b97';  // 替换为你的 Cloudflare Account ID
-const CLOUDFLARE_SCRIPT_NAME = 'sub';  // 替换为创建 Workers 时的名称
+const CLOUDFLARE_API_TOKEN = '8888';    // 替换为你的 Cloudflare API Token
+const CLOUDFLARE_ACCOUNT_ID = '8888';   // 替换为你的 Cloudflare Account ID
+const CLOUDFLARE_SCRIPT_NAME = 'sub';   // 替换为创建 Workers 时的名称
 
 // 安全配置
 const ALLOWED_IPS = [];         // 允许IP访问，默认开放所有IP,若限制IP,将影响订阅上传功能,若只使用订阅归总功能,可限制IP
-const RATE_LIMIT = 3;          // 每分钟最多 3 次请求
+const RATE_LIMIT = 3;           // 每分钟最多 3 次请求
 
 // 订阅配置
 let CFIP = "www.visa.com.tw";  // 优选 IP 或优选域名
