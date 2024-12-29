@@ -24,10 +24,10 @@ let CFIP = "www.visa.com.tw";  // 优选 IP 或优选域名
 let CFPORT = "443";            // 优选 IP 或域名对应的端口
 const SUB_PATH = '/sub';       // 订阅路径,可更换更复杂的请求路径,wokers域名/sub?CFIP=47.75.222.188&CFPORT=7890中的sub
 
-// 订阅链接,添加在双引号内
+// 订阅链接,添加在双引号内,
 let subscriptions = [
-  "https://railway-production-e841.up.railway.app/sub",
-  "https://myjpapp-laowang.ladeapp.com/sub"  // 最后一个没有逗号
+  "https://google.com/sub",
+  "https://google.com/sub"  // 最后一个没有逗号
 ];
 
 // 单独节点, 添加在双引号内,
