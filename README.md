@@ -1,12 +1,14 @@
 # Merge-sub
 将多个子订阅链接合并成一个订阅链接，可自定义优选域名或优选ip
 
+Serv00一键部署命令
+* 默认用户名和密码都为账户名称，请及时更改
 ```
 bash <(curl -Ls https://raw.githubusercontent.com/eooce/Merge-sub/main/install.sh)
 ```
 
-
-* 可带参数访问：http://ip:端口/sub?CFIP=优选ip&CFPORT=优选ip端口
+* 默认订阅：http://ip:端口/sub 或 https://你的用户名.serv00.net/sub
+* 带优选ip订阅：http://ip:端口/sub?CFIP=优选ip&CFPORT=优选ip端口
 * 例如：http://192.168.1.1:10000/sub?CFIP=47.75.222.188&CFPORT=7890
 
 
