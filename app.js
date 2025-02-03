@@ -29,7 +29,7 @@ const initialData = {
         '',
     ],
     nodes: `
-    
+
     `
 };
 
@@ -559,10 +559,12 @@ function replaceAddressAndPort(content) {
     }
 
     return content.split('\n').map(line => {
-        // 只处理 ws 协议且带 TLS 的节点
-        if (line.startsWith('vmess://') || line.startsWith('vless://')) {
+        line = line.trim();
+        if (!line) return line;
+
+        if (line.startsWith('vmess://')) {
             try {
-                const base64Part = line.substring(line.indexOf('://') + 3);
+                const base64Part = line.substring(8); // 去掉 'vmess://'
                 const decoded = Buffer.from(base64Part, 'base64').toString('utf-8');
                 const nodeObj = JSON.parse(decoded);
 
@@ -570,15 +572,27 @@ function replaceAddressAndPort(content) {
                 if (nodeObj.net === 'ws' && nodeObj.tls === 'tls') {
                     nodeObj.add = CFIP;
                     nodeObj.port = parseInt(CFPORT, 10);
-                    const updatedNode = Buffer.from(JSON.stringify(nodeObj)).toString('base64');
-                    return `${line.substring(0, line.indexOf('://') + 3)}${updatedNode}`;
+                    return 'vmess://' + Buffer.from(JSON.stringify(nodeObj)).toString('base64');
                 }
             } catch (error) {
-                console.error(`Error parsing node: ${line}`, error);
+                console.error('Error processing VMess node:', error);
+            }
+        }
+        // 处理 VLESS 和 Trojan 节点
+        else if (line.startsWith('vless://') || line.startsWith('trojan://')) {
+            try {
+                // 检查是否包含 ws 和 tls
+                if (line.includes('type=ws') && line.includes('security=tls')) {
+                    return line.replace(/@([\w.-]+):(\d+)/, (match, host) => {
+                        return `@${CFIP}:${CFPORT}`;
+                    });
+                }
+            } catch (error) {
+                console.error('Error processing VLESS/Trojan node:', error);
             }
         }
 
-        // 其他协议（如 tcp、hysteria、hysteria2、tuic snell等）不替换
+        // 其他协议（如 tcp、hysteria、hysteria2、tuic snell等）返回原始行
         return line;
     }).join('\n');
 }
@@ -590,7 +604,7 @@ async function startServer() {
         await initializeCredentialsFile();
         credentials = await loadCredentials();
         console.log('Credentials initialized and loaded successfully');
-
+        await initializeDataFile();
         // 启动服务器
         app.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
