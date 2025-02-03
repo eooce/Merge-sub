@@ -34,8 +34,8 @@ install_sub() {
 check_website
 rm -rf "$WORKDIR" && mkdir -p "$WORKDIR" && chmod 777 "$WORKDIR" >/dev/null 2>&1
 git clone https://github.com/eooce/Merge-sub.git
-mv "$HOME/Merge-sub/*" "$WORKDIR/" >/dev/null 2>&1
-cd $WORKDIR && rm -rf workers Merge-sub Dockerfile README.md >/dev/null 2>&1
+mv "$HOME/Merge-sub/*" "$WORKDIR" >/dev/null 2>&1
+cd $WORKDIR && rm -rf $HOME/Merge-sub workers Dockerfile README.md >/dev/null 2>&1
 ip_address=$(devil vhost list | sed -n '5p' | awk '{print $1}')
 devil ssl www add $ip_address le le keep.${USERNAME}.serv00.net > /dev/null 2>&1
 ln -fs /usr/local/bin/node18 ~/bin/node > /dev/null 2>&1
