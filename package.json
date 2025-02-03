@@ -2,20 +2,20 @@
     "name": "merge-sub",
     "version": "1.0.0",
     "description": "nodejs",
-    "main": "index.js",
     "author": "eooce",
-    "repository": "https://github.com/eooce/Merge-sub",
+    "repository": "",
     "license": "MIT",
+    "main": "app.js",
     "private": false,
     "scripts": {
-      "start": "node index.js"
+        "start": "node app.js"
     },
     "dependencies": {
-      "express": "latest",
-        "axios": "latest"
+        "axios": "^1.7.9",
+        "basic-auth": "^2.0.1",
+        "express": "latest"
     },
     "engines": {
-      "node": ">=14"
+        "node": ">=14"
     }
-  }
-  
+}
