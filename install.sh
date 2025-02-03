@@ -33,8 +33,8 @@ fi
 install_sub() {
 check_website
 rm -rf "$WORKDIR" && mkdir -p "$WORKDIR" && chmod 777 "$WORKDIR" >/dev/null 2>&1
-cd "$WORKDIR" && git clone https://github.com/eooce/Merge-sub.git
-mv "$WORKDIR/Merge-sub/*" "$WORKDIR" >/dev/null 2>&1
+git clone https://github.com/eooce/Merge-sub.git
+mv "$HOME/Merge-sub/*" "$WORKDIR/" >/dev/null 2>&1
 rm -rf workers Merge-sub Dockerfile README.md >/dev/null 2>&1
 ip_address=$(devil vhost list | sed -n '5p' | awk '{print $1}')
 devil ssl www add $ip_address le le keep.${USERNAME}.serv00.net > /dev/null 2>&1
@@ -44,7 +44,7 @@ mkdir -p ~/.npm-global
 npm config set prefix '~/.npm-global'
 echo 'export PATH=~/.npm-global/bin:~/bin:$PATH' >> $HOME/.bash_profile && source $HOME/.bash_profile
 rm -rf $HOME/.npmrc > /dev/null 2>&1
-npm install -r package.json --silent > /dev/null 2>&1
+npm install -r $WORKDIR/package.json --silent > /dev/null 2>&1
 devil www options ${USERNAME}.serv00.net sslonly on > /dev/null 2>&1
 if devil www restart ${USERNAME}.serv00.net 2>&1 | grep -q "succesfully"; then
     green "汇聚订阅已部署\n登录用户名：${USERNAME}\n 登录密码：${USERNAME}\n管理页面: https://${USERNAME}.serv00.net\n\n"
