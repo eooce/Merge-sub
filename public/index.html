@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Subscriptions-最好用的订阅管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="/index.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="top-right">
+            <a href="/change-password.html">修改密码</a>
+             <a href="https://github.com/eooce/Merge-sub" target="_blank">
+                <i class="fab fa-github"></i>GitHub
+            </a>
+        </div>
+        <h1>Merge Subscriptions</h1>
+
+        <div class="row">
+            <div class="column">
+                <div class="section input-section">
+                    <h2>Add Subscriptions or Nodes</h2>
+                    <textarea id="addInput" placeholder="Enter subscription URL(s) or node(s)"></textarea>
+                    <button class="add-btn" onclick="addItem()">Add</button>
+                </div>
+                <div class="section input-section">
+                    <h2>Delete Subscriptions or Nodes</h2>
+                    <textarea id="deleteInput" placeholder="Enter subscription URL(s) or node(s) to delete"></textarea>
+                    <button class="delete-btn" onclick="deleteItem()">Delete</button>
+                </div>
+            </div>
+            <div class="column">
+                <div class="section">
+                    <h2>Current Subscriptions and Nodes</h2>
+                    <pre id="data"></pre>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            |Merge Subscriptions|<a href="https://github.com/eooce" target="_blank">Powered by eooce</a>
+        </div>
+    </div>
+    <script type="text/javascript" src="script.js"></script>
+</body>
+</html>
