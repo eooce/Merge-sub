@@ -50,6 +50,7 @@ if devil www restart ${USERNAME}.serv00.net 2>&1 | grep -q "succesfully"; then
     yellow "汇聚节点订阅：https://${USERNAME}.serv00.net/sub\n\n自定义优选ip订阅：https://${USERNAME}.serv00.net/sub?CFIP=ip.sb&CFPORT=443  ip.sb和端口可随意更换\n\n"
 else
     red "汇聚订阅安装失败\n${yellow}devil www del ${USERNAME}.serv00.net\nrm -rf $HOME/${USERNAME}/domains/*\n${red}请依次执行上述命令后重新安装!"
+fi
 }  
 
 install_sub
