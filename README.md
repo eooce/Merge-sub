@@ -1,10 +1,19 @@
 # Merge-sub
-将多个子订阅链接合并成一个订阅链接，可自定义优选域名或优选ip
+将多个子订阅链接和单节点合并成一个订阅链接，可自定义优选域名或优选ip
 
-Serv00一键部署命令
+# 1: Serv00一键部署命令
 * 默认用户名和密码都为账户名称，请及时更改
 ```
 bash <(curl -Ls https://raw.githubusercontent.com/eooce/Merge-sub/main/install.sh)
+```
+
+# 2: vps一键部署
+```
+apt get-install git screen -y
+git clone https://github.com/eooce/Merge-sub.git
+cd Merge-sub && rf -rf workers Dockerfile README.md install.sh
+npm install
+screen npm start 
 ```
 
 * 默认订阅：http://ip:端口/sub 或 https://你的用户名.serv00.net/sub
