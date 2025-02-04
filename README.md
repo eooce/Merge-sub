@@ -1,6 +1,7 @@
 # Merge-sub
 将多个子订阅链接和单节点合并成一个订阅链接，可自定义优选域名或优选ip
-在线体验地址：https://merge.serv00.net   用户名和密码均为admin   
+* 在线体验地址：https://merge.serv00.net   用户名和密码均为admin
+
 ## 1: Serv00一键部署命令
 * 默认用户名和密码都为账户名称，请及时更改
 ```
