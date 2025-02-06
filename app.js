@@ -4,18 +4,44 @@ const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');
 const app = express();
+const crypto = require('crypto');
 const basicAuth = require('basic-auth');
 const { execSync } = require('child_process');
 
 const PORT = process.env.SERVER_PORT || process.env.PORT || 3000;
-const SUB_TOKEN = process.env.SUB_TOKEN || 'sub';
+const SUB_TOKEN = process.env.SUB_TOKEN || generateRandomString(16);
 let CFIP = process.env.CFIP || "www.visa.com.tw";
 let CFPORT = process.env.CFPORT || "443";
 
-const DATA_FILE = path.join(__dirname, 'data.json');               // 数据文件路径
-const CREDENTIALS_FILE = path.join(__dirname, 'credentials.json'); // 凭证文件路径
+const DATA_FILE = path.join(__dirname, 'data.json');
+const CREDENTIALS_FILE = path.join(__dirname, 'credentials.json');
 
-// 静态文件服务（管理页面）
+// 初始化数据
+const initialData = {
+    subscriptions: [''],
+    nodes: ''
+};
+
+let subscriptions = [];
+let nodes = '';
+
+// 初始化凭证变量
+let credentials = {
+    username: 'admin',
+    password: 'admin'
+};
+
+// 定义身份验证中间件
+const auth = async (req, res, next) => {
+    const user = basicAuth(req);
+    if (!user || user.name !== credentials.username || user.pass !== credentials.password) {
+        res.set('WWW-Authenticate', 'Basic realm="Node"');
+        return res.status(401).send('认证失败');
+    }
+    next();
+};
+
+// 静态文件服务
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
@@ -23,18 +49,17 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// 初始数据
-const initialData = {
-    subscriptions: [
-        '',
-    ],
-    nodes: `
+// 获取 SUB_TOKEN 的路由
+app.get('/get-sub-token', auth, (req, res) => {
+    res.json({ token: SUB_TOKEN });
+});
 
-    `
-};
-
-let subscriptions = [];
-let nodes = '';
+// 生成随机16位字符
+function generateRandomString(length) {
+    return crypto.randomBytes(Math.ceil(length / 2))
+      .toString('hex') 
+      .slice(0, length); 
+}
 
 // 获取系统用户名
 function getSystemUsername() {
@@ -108,29 +133,6 @@ async function saveCredentials(newCredentials) {
     }
 }
 
-// 初始化凭证变量
-let credentials = {
-    username: 'admin',
-    password: 'admin'
-};
-
-// 身份验证中间件
-const auth = async (req, res, next) => {
-    try {
-        // 每次验证时重新加载凭证
-        credentials = await loadCredentials();
-        
-        const user = basicAuth(req);
-        if (!user || user.name !== credentials.username || user.pass !== credentials.password) {
-            res.setHeader('WWW-Authenticate', 'Basic realm="Admin Access"');
-            return res.status(401).send('Authentication required.');
-        }
-        next();
-    } catch (error) {
-        console.error('Auth error:', error);
-        res.status(500).send('Internal Server Error');
-    }
-};
 
 // 凭证更新路由
 app.post('/admin/update-credentials', auth, async (req, res) => {
@@ -292,6 +294,38 @@ app.post('/admin/add-subscription', async (req, res) => {
     }
 });
 
+// 检查并解码 base64
+function tryDecodeBase64(str) {
+    const base64Regex = /^[A-Za-z0-9+/=]+$/;
+    try {
+        if (base64Regex.test(str)) {
+            const decoded = Buffer.from(str, 'base64').toString('utf-8');
+            if (decoded.startsWith('vmess://') || 
+                decoded.startsWith('vless://') || 
+                decoded.startsWith('trojan://') ||
+                decoded.startsWith('ss://') ||
+                decoded.startsWith('ssr://') ||
+                decoded.startsWith('tuic://') ||
+                decoded.startsWith('hysteria://') ||
+                decoded.startsWith('hysteria2://') ||
+                decoded.startsWith('snell://') ||
+                decoded.startsWith('juiciy://') ||
+                decoded.startsWith('wireguard://') ||
+                decoded.startsWith('socks5://') ||
+                decoded.startsWith('http://') ||
+                decoded.startsWith('https://')) {
+                return decoded;
+            }
+        }
+        // 如果不是 base64 或解码后不是有效节点，返回原始字符串
+        return str;
+    } catch (error) {
+        console.log('Not a valid base64 string, using original input');
+        return str;
+    }
+}
+
+
 // 添加节点路由
 app.post('/admin/add-node', async (req, res) => {
     try {
@@ -306,24 +340,52 @@ app.post('/admin/add-node', async (req, res) => {
             ? nodes.split('\n').map(n => n.trim()).filter(n => n)
             : [];
 
-        if (nodesList.some(node => node === newNode)) {
-            return res.status(400).json({ error: 'Node already exists' });
+        const newNodes = newNode.split('\n')
+            .map(n => n.trim())
+            .filter(n => n)
+            .map(n => tryDecodeBase64(n)); 
+
+        const addedNodes = [];
+        const existingNodes = [];
+
+        // 处理每个新节点
+        for (const node of newNodes) {
+            if (nodesList.some(existingNode => existingNode === node)) {
+                existingNodes.push(node);
+            } else {
+                addedNodes.push(node);
+                nodesList.push(node);
+            }
         }
 
-        // 添加新节点
-        nodesList.push(newNode);
-        nodes = nodesList.join('\n');
-        await saveData(subscriptions, nodes);
-        console.log('Node added successfully. Current nodes:', nodes);
-        
-        res.status(200).json({ message: '节点添加成功' });
+        if (addedNodes.length > 0) {
+            nodes = nodesList.join('\n');
+            await saveData(subscriptions, nodes);
+            console.log('Node(s) added successfully');
+            
+            const message = addedNodes.length === newNodes.length 
+                ? '节点添加成功' 
+                : `成功添加 ${addedNodes.length} 个节点，${existingNodes.length} 个节点已存在`;
+            
+            res.status(200).json({ message });
+        } else {
+            res.status(400).json({ error: '所有节点已存在' });
+        }
     } catch (error) {
         console.error('Error adding node:', error);
         res.status(500).json({ error: 'Failed to add node' });
     }
 });
 
-// 删除订阅路由
+// 移除特殊字符
+function cleanNodeString(str) {
+    return str
+        .replace(/^["'`]+|["'`]+$/g, '') 
+        .replace(/,+$/g, '') 
+        .replace(/\s+/g, '') 
+        .trim();
+}
+
 app.post('/admin/delete-subscription', async (req, res) => {
     try {
         const subsToDelete = req.body.subscription?.trim();
@@ -338,10 +400,10 @@ app.post('/admin/delete-subscription', async (req, res) => {
             return res.status(404).json({ error: 'No subscriptions found' });
         }
 
-        // 分割多行输入
+        // 分割多行输入并清理每个订阅字符串
         const deleteList = subsToDelete.split('\n')
-            .map(sub => sub.trim())
-            .filter(sub => sub); // 过滤空行
+            .map(sub => cleanNodeString(sub)) 
+            .filter(sub => sub);
 
         // 记录删除结果
         const deletedSubs = [];
@@ -349,7 +411,9 @@ app.post('/admin/delete-subscription', async (req, res) => {
 
         // 处理每个要删除的订阅
         deleteList.forEach(subToDelete => {
-            const index = subscriptions.findIndex(sub => sub.trim() === subToDelete);
+            const index = subscriptions.findIndex(sub => 
+                cleanNodeString(sub) === subToDelete 
+            );
             if (index !== -1) {
                 deletedSubs.push(subToDelete);
                 subscriptions.splice(index, 1);
@@ -375,13 +439,6 @@ app.post('/admin/delete-subscription', async (req, res) => {
         res.status(500).json({ error: 'Failed to delete subscription' });
     }
 });
-
-// 清理节点字符串的辅助函数
-function cleanNodeString(nodeStr) {
-    return nodeStr
-        .replace(/['"`,]/g, '') // 移除单引号、双引号和逗号
-        .trim();
-}
 
 // 删除节点路由
 app.post('/admin/delete-node', async (req, res) => {
@@ -564,7 +621,7 @@ function replaceAddressAndPort(content) {
 
         if (line.startsWith('vmess://')) {
             try {
-                const base64Part = line.substring(8); // 去掉 'vmess://'
+                const base64Part = line.substring(8); 
                 const decoded = Buffer.from(base64Part, 'base64').toString('utf-8');
                 const nodeObj = JSON.parse(decoded);
 
