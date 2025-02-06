@@ -49,7 +49,6 @@ npm install -r package.json --silent > /dev/null 2>&1
 devil www options ${USERNAME}.serv00.net sslonly on > /dev/null 2>&1
 if devil www restart ${USERNAME}.serv00.net 2>&1 | grep -q "succesfully"; then
     green "\n汇聚订阅已部署\n\n用户名：${USERNAME}\n登录密码：${USERNAME}\n管理页面: https://${USERNAME}.serv00.net\n\n"
-    yellow "汇聚节点订阅：https://${USERNAME}.serv00.net/sub\n\n自定义优选ip订阅：https://${USERNAME}.serv00.net/sub?CFIP=ip.sb&CFPORT=443  ip.sb和端口可随意更换可用的优选ip或优选域名\n\n"
 else
     red "汇聚订阅安装失败\n${yellow}devil www del ${USERNAME}.serv00.net\nrm -rf $HOME/${USERNAME}/domains/*\n${red}请依次执行上述命令后重新安装!"
 fi
