@@ -309,7 +309,7 @@ function tryDecodeBase64(str) {
                 decoded.startsWith('hysteria://') ||
                 decoded.startsWith('hysteria2://') ||
                 decoded.startsWith('snell://') ||
-                decoded.startsWith('juiciy://') ||
+                decoded.startsWith('juicity://') ||
                 decoded.startsWith('wireguard://') ||
                 decoded.startsWith('socks5://') ||
                 decoded.startsWith('http://') ||
