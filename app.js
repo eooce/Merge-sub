@@ -18,12 +18,9 @@ const CREDENTIALS_FILE = path.join(__dirname, 'credentials.json');
 
 // 初始化数据
 const initialData = {
-    subscriptions: [''],
+    subscriptions: [],
     nodes: ''
 };
-
-let subscriptions = [];
-let nodes = '';
 
 // 初始化凭证变量
 let credentials = {
@@ -325,7 +322,6 @@ function tryDecodeBase64(str) {
     }
 }
 
-
 // 添加节点路由
 app.post('/admin/add-node', async (req, res) => {
     try {
@@ -386,6 +382,7 @@ function cleanNodeString(str) {
         .trim();
 }
 
+// 删除订阅路由
 app.post('/admin/delete-subscription', async (req, res) => {
     try {
         const subsToDelete = req.body.subscription?.trim();
