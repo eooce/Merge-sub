@@ -12,13 +12,15 @@ const PORT = process.env.SERVER_PORT || process.env.PORT || 3000;
 const SUB_TOKEN = process.env.SUB_TOKEN || generateRandomString(16);
 let CFIP = process.env.CFIP || "www.visa.com.tw";
 let CFPORT = process.env.CFPORT || "443";
-let subscriptions = [];
-let nodes = '';
 
 const DATA_FILE = path.join(__dirname, 'data.json');
 const CREDENTIALS_FILE = path.join(__dirname, 'credentials.json');
 
-// 初始化数据
+// 添加全局变量声明
+let subscriptions = [];
+let nodes = '';
+
+// 初始数据
 const initialData = {
     subscriptions: [],
     nodes: ''
@@ -30,7 +32,7 @@ let credentials = {
     password: 'admin'
 };
 
-// 定义身份验证中间件
+// 身份验证中间件
 const auth = async (req, res, next) => {
     const user = basicAuth(req);
     if (!user || user.name !== credentials.username || user.pass !== credentials.password) {
@@ -53,10 +55,10 @@ app.get('/get-sub-token', auth, (req, res) => {
     res.json({ token: SUB_TOKEN });
 });
 
-// 生成随机16位字符
+// 生成随机16位字符的函数
 function generateRandomString(length) {
     return crypto.randomBytes(Math.ceil(length / 2))
-      .toString('hex') 
+      .toString('hex') // 转换为十六进制格式
       .slice(0, length); 
 }
 
@@ -195,6 +197,7 @@ app.use(['/admin', '/'], (req, res, next) => {
     return auth(req, res, next);
 });
 
+
 // 初始化数据文件
 async function initializeDataFile() {
     try {
@@ -307,11 +310,11 @@ function tryDecodeBase64(str) {
                 decoded.startsWith('trojan://') ||
                 decoded.startsWith('ss://') ||
                 decoded.startsWith('ssr://') ||
-                decoded.startsWith('tuic://') ||
+                decoded.startsWith('snell://') ||
+                decoded.startsWith('juiciy://') ||
                 decoded.startsWith('hysteria://') ||
                 decoded.startsWith('hysteria2://') ||
-                decoded.startsWith('snell://') ||
-                decoded.startsWith('juicity://') ||
+                decoded.startsWith('tuic://') ||
                 decoded.startsWith('wireguard://') ||
                 decoded.startsWith('socks5://') ||
                 decoded.startsWith('http://') ||
@@ -381,13 +384,12 @@ app.post('/admin/add-node', async (req, res) => {
 // 移除特殊字符
 function cleanNodeString(str) {
     return str
-        .replace(/^["'`]+|["'`]+$/g, '') 
-        .replace(/,+$/g, '') 
-        .replace(/\s+/g, '') 
+        .replace(/^["'`]+|["'`]+$/g, '') // 移除首尾的引号
+        .replace(/,+$/g, '') // 移除末尾的逗号
+        .replace(/\s+/g, '') // 移除所有空白字符
         .trim();
 }
 
-// 删除订阅路由
 app.post('/admin/delete-subscription', async (req, res) => {
     try {
         const subsToDelete = req.body.subscription?.trim();
@@ -757,6 +759,7 @@ async function saveData(subs, nds) {
         throw error;
     }
 }
+
 // 订阅路由
 app.get(`/${SUB_TOKEN}`, async (req, res) => {
     try {
@@ -841,7 +844,7 @@ function replaceAddressAndPort(content) {
 
         if (line.startsWith('vmess://')) {
             try {
-                const base64Part = line.substring(8); 
+                const base64Part = line.substring(8); // 去掉 'vmess://'
                 const decoded = Buffer.from(base64Part, 'base64').toString('utf-8');
                 const nodeObj = JSON.parse(decoded);
 
