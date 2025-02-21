@@ -311,7 +311,7 @@ function tryDecodeBase64(str) {
                 decoded.startsWith('ss://') ||
                 decoded.startsWith('ssr://') ||
                 decoded.startsWith('snell://') ||
-                decoded.startsWith('juiciy://') ||
+                decoded.startsWith('juicity://') ||
                 decoded.startsWith('hysteria://') ||
                 decoded.startsWith('hysteria2://') ||
                 decoded.startsWith('tuic://') ||
