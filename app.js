@@ -12,6 +12,8 @@ const PORT = process.env.SERVER_PORT || process.env.PORT || 3000;
 const SUB_TOKEN = process.env.SUB_TOKEN || generateRandomString(16);
 let CFIP = process.env.CFIP || "www.visa.com.tw";
 let CFPORT = process.env.CFPORT || "443";
+let subscriptions = [];
+let nodes = '';
 
 const DATA_FILE = path.join(__dirname, 'data.json');
 const CREDENTIALS_FILE = path.join(__dirname, 'credentials.json');
@@ -185,10 +187,13 @@ app.use(['/admin', '/'], (req, res, next) => {
     if (req.path === '/' && req.method === 'GET') {
         return next();
     }
+    // 排除 API 路径
+    if (req.path.startsWith('/api/')) {
+        return next();
+    }
     // 其他路径应用验证
     return auth(req, res, next);
 });
-
 
 // 初始化数据文件
 async function initializeDataFile() {
@@ -493,6 +498,224 @@ app.post('/admin/delete-node', async (req, res) => {
     } catch (error) {
         console.error('Error deleting node:', error);
         res.status(500).json({ error: 'Failed to delete node' });
+    }
+});
+
+// API路由 - 添加订阅（无需验证）
+app.post('/api/add-subscriptions', async (req, res) => {
+    try {
+        const newSubscriptions = req.body.subscription;
+        console.log('API - Attempting to add subscription(s):', newSubscriptions);
+
+        if (!newSubscriptions) {
+            return res.status(400).json({ error: 'Subscription URL is required' });
+        }
+
+        if (!Array.isArray(subscriptions)) {
+            subscriptions = [];
+        }
+
+        // 处理输入数据
+        const processedSubs = Array.isArray(newSubscriptions)
+            ? newSubscriptions.map(sub => sub.trim()).filter(sub => sub)
+            : [newSubscriptions.trim()].filter(sub => sub);
+
+        // 检查每个订阅是否已存在
+        const addedSubs = [];
+        const existingSubs = [];
+
+        for (const sub of processedSubs) {
+            if (subscriptions.some(existingSub => existingSub.trim() === sub)) {
+                existingSubs.push(sub);
+            } else {
+                addedSubs.push(sub);
+                subscriptions.push(sub);
+            }
+        }
+
+        if (addedSubs.length > 0) {
+            await saveData(subscriptions, nodes);
+            res.status(200).json({
+                success: true,
+                added: addedSubs,
+                existing: existingSubs
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                error: 'All subscriptions already exist'
+            });
+        }
+    } catch (error) {
+        console.error('API Error adding subscription:', error);
+        res.status(500).json({ error: 'Failed to add subscription' });
+    }
+});
+
+// API路由 - 添加节点（无需验证）
+app.post('/api/add-nodes', async (req, res) => {
+    try {
+        const newNodes = req.body.nodes;
+        
+        if (!newNodes) {
+            return res.status(400).json({ error: 'Nodes are required' });
+        }
+
+        let nodesList = typeof nodes === 'string'
+            ? nodes.split('\n').map(n => n.trim()).filter(n => n)
+            : [];
+
+        const processedNodes = Array.isArray(newNodes)
+            ? newNodes
+            : newNodes.split('\n');
+
+        const nodesToAdd = processedNodes
+            .map(n => n.trim())
+            .filter(n => n)
+            .map(n => tryDecodeBase64(n));
+
+        const addedNodes = [];
+        const existingNodes = [];
+
+        for (const node of nodesToAdd) {
+            if (nodesList.some(existingNode => existingNode === node)) {
+                existingNodes.push(node);
+            } else {
+                addedNodes.push(node);
+                nodesList.push(node);
+            }
+        }
+
+        if (addedNodes.length > 0) {
+            nodes = nodesList.join('\n');
+            await saveData(subscriptions, nodes);
+            res.status(200).json({
+                success: true,
+                added: addedNodes,
+                existing: existingNodes
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                error: 'All nodes already exist'
+            });
+        }
+    } catch (error) {
+        console.error('API Error adding nodes:', error);
+        res.status(500).json({ error: 'Failed to add nodes' });
+    }
+});
+
+// API路由 - 删除订阅（无需验证）
+app.delete('/api/delete-subscriptions', async (req, res) => {
+    try {
+        const subsToDelete = req.body.subscription;
+        
+        if (!subsToDelete) {
+            return res.status(400).json({ error: 'Subscription URL is required' });
+        }
+
+        if (!Array.isArray(subscriptions)) {
+            subscriptions = [];
+            return res.status(404).json({ error: 'No subscriptions found' });
+        }
+
+        const deleteList = Array.isArray(subsToDelete) 
+            ? subsToDelete 
+            : subsToDelete.split('\n');
+
+        const processedSubs = deleteList
+            .map(sub => cleanNodeString(sub))
+            .filter(sub => sub);
+
+        const deletedSubs = [];
+        const notFoundSubs = [];
+
+        processedSubs.forEach(subToDelete => {
+            const index = subscriptions.findIndex(sub => 
+                cleanNodeString(sub) === subToDelete
+            );
+            if (index !== -1) {
+                deletedSubs.push(subToDelete);
+                subscriptions.splice(index, 1);
+            } else {
+                notFoundSubs.push(subToDelete);
+            }
+        });
+
+        if (deletedSubs.length > 0) {
+            await saveData(subscriptions, nodes);
+            res.status(200).json({
+                success: true,
+                deleted: deletedSubs,
+                notFound: notFoundSubs
+            });
+        } else {
+            res.status(404).json({
+                success: false,
+                error: 'No subscriptions found to delete'
+            });
+        }
+    } catch (error) {
+        console.error('API Error deleting subscription:', error);
+        res.status(500).json({ error: 'Failed to delete subscription' });
+    }
+});
+
+// API路由 - 删除节点（无需验证）
+app.delete('/api/delete-nodes', async (req, res) => {
+    try {
+        const nodesToDelete = req.body.nodes;
+
+        if (!nodesToDelete) {
+            return res.status(400).json({ error: 'Nodes are required' });
+        }
+
+        const deleteList = Array.isArray(nodesToDelete)
+            ? nodesToDelete
+            : nodesToDelete.split('\n');
+
+        const processedNodes = deleteList
+            .map(node => cleanNodeString(node))
+            .filter(node => node);
+
+        let nodesList = nodes.split('\n')
+            .map(node => cleanNodeString(node))
+            .filter(node => node);
+
+        const deletedNodes = [];
+        const notFoundNodes = [];
+
+        processedNodes.forEach(nodeToDelete => {
+            const index = nodesList.findIndex(node => 
+                cleanNodeString(node) === cleanNodeString(nodeToDelete)
+            );
+            
+            if (index !== -1) {
+                deletedNodes.push(nodeToDelete);
+                nodesList.splice(index, 1);
+            } else {
+                notFoundNodes.push(nodeToDelete);
+            }
+        });
+
+        if (deletedNodes.length > 0) {
+            nodes = nodesList.join('\n');
+            await saveData(subscriptions, nodes);
+            res.status(200).json({
+                success: true,
+                deleted: deletedNodes,
+                notFound: notFoundNodes
+            });
+        } else {
+            res.status(404).json({
+                success: false,
+                error: 'No nodes found to delete'
+            });
+        }
+    } catch (error) {
+        console.error('API Error deleting nodes:', error);
+        res.status(500).json({ error: 'Failed to delete nodes' });
     }
 });
 
