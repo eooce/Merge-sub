@@ -20,8 +20,14 @@ npm install
 screen npm start 
 ```
 
-* 默认订阅：http://ip:端口/sub 或 https://你的用户名.serv00.net/sub
-* 带优选ip订阅：http://ip:端口/sub?CFIP=优选ip&CFPORT=优选ip端口
+## 3: Docker镜像一键部署,容器平台等
+
+```
+ghcr.io/eooce/merge-sub:latest
+```
+
+* 默认订阅：http://ip:端口/随机token 或 https://你的用户名.serv00.net/随机token
+* 带优选ip订阅：http://ip:端口/随机token?CFIP=优选ip&CFPORT=优选ip端口
 * 例如：http://192.168.1.1:10000/sub?CFIP=47.75.222.188&CFPORT=7890
 
 
