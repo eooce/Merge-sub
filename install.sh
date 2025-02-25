@@ -23,7 +23,7 @@ else
         red "不存在${USERNAME}.serv00.net的nodejs站点,正在为你调整..."
         devil www del "${USERNAME}.serv00.net" > /dev/null 2>&1
         devil www add "${USERNAME}.serv00.net" nodejs /usr/local/bin/node18 > /dev/null 2>&1
-        green "已删除旧站点并创建新的php站点"
+        green "已删除旧站点并创建新的nodejs站点"
     else
         devil www add "${USERNAME}.serv00.net" nodejs /usr/local/bin/node18 > /dev/null 2>&1
         green "nodejs站点创建完成"
