@@ -2,6 +2,10 @@
 将多个子订阅链接和单节点合并成一个订阅链接，可自定义优选域名或优选ip
 * 在线体验地址：https://merge.serv00.net   用户名和密码均为admin 演示站不要尝试改密码，已禁用
 
+* 默认订阅：http://ip:端口/随机token 或 https://你的用户名.serv00.net/随机token
+* 带优选ip订阅：http://ip:端口/随机token?CFIP=优选ip&CFPORT=优选ip端口
+* 例如：http://192.168.1.1:10000/sub?CFIP=47.75.222.188&CFPORT=7890
+
 ## 1: Serv00一键部署命令
 * 默认用户名和密码都为账户名称，请及时更改
 ```
@@ -25,10 +29,6 @@ screen npm start
 ```
 ghcr.io/eooce/merge-sub:latest
 ```
-
-* 默认订阅：http://ip:端口/随机token 或 https://你的用户名.serv00.net/随机token
-* 带优选ip订阅：http://ip:端口/随机token?CFIP=优选ip&CFPORT=优选ip端口
-* 例如：http://192.168.1.1:10000/sub?CFIP=47.75.222.188&CFPORT=7890
 
 
 # 免责声明
