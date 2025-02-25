@@ -9,7 +9,7 @@ const basicAuth = require('basic-auth');
 const { execSync } = require('child_process');
 
 const PORT = process.env.SERVER_PORT || process.env.PORT || 3000;
-const SUB_TOKEN = process.env.SUB_TOKEN || generateRandomString(16);
+const SUB_TOKEN = process.env.SUB_TOKEN || generateRandomString();
 let CFIP = process.env.CFIP || "www.visa.com.tw";
 let CFPORT = process.env.CFPORT || "443";
 
@@ -55,11 +55,11 @@ app.get('/get-sub-token', auth, (req, res) => {
     res.json({ token: SUB_TOKEN });
 });
 
-// 生成随机16位字符的函数
-function generateRandomString(length) {
-    return crypto.randomBytes(Math.ceil(length / 2))
-      .toString('hex') // 转换为十六进制格式
-      .slice(0, length); 
+// 根据用户名生成随机24位字符,并保持重启不变
+function generateRandomString() {
+    const username = getSystemUsername();
+    const hash = crypto.createHash('md5').update(username).digest('hex');
+    return hash.slice(0, 24); 
 }
 
 // 获取系统用户名
