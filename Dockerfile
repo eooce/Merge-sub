@@ -4,10 +4,11 @@ WORKDIR /app
 
 COPY . .
 
-EXPOSE 7860
+EXPOSE 3000
 
 RUN apk update && apk add --no-cache openssl curl wget &&\
-    chmod +x index.js &&\
+    rm -rf workers install.sh &&\
+    chmod +x app.js &&\
     npm install
 
 CMD ["node", "app.js"]
