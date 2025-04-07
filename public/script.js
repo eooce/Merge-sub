@@ -194,12 +194,12 @@ async function showSubscriptionInfo() {
         
         const customSubLine = createSubscriptionLine(
             '带优选IP订阅链接：',
-            `${currentDomain}/${subToken}?CFIP=www.visa.com.tw&CFPORT=443`
+            `${currentDomain}/${subToken}?CFIP=www.visa.com.sg&CFPORT=443`
         );
         
         const noteDiv = document.createElement('div');
         noteDiv.className = 'subscription-note';
-        noteDiv.textContent = '提醒：将www.visa.com.tw和443改为更快的优选ip或优选域名和对应的端口';
+        noteDiv.textContent = '提醒：将www.visa.com.sg和443改为更快的优选ip或优选域名和对应的端口';
         
         const closeButton = document.createElement('button');
         closeButton.className = 'alert-button';
