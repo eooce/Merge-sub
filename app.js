@@ -8,19 +8,20 @@ const crypto = require('crypto');
 const basicAuth = require('basic-auth');
 const { execSync } = require('child_process');
 
+const USERNAME = process.env.USERNAME || 'admin';
+const PASSWORD = process.env.PASSWORD || 'admin';
 const PORT = process.env.SERVER_PORT || process.env.PORT || 3000;
 const SUB_TOKEN = process.env.SUB_TOKEN || generateRandomString();
-let CFIP = process.env.CFIP || "www.visa.com.tw";
+
+let CFIP = process.env.CFIP || "www.visa.com.sg";
 let CFPORT = process.env.CFPORT || "443";
+let subscriptions = [];
+let nodes = '';
 
 const DATA_FILE = path.join(__dirname, 'data.json');
 const CREDENTIALS_FILE = path.join(__dirname, 'credentials.json');
 
-// 添加全局变量声明
-let subscriptions = [];
-let nodes = '';
-
-// 初始数据
+// 初始化数据
 const initialData = {
     subscriptions: [],
     nodes: ''
@@ -28,8 +29,8 @@ const initialData = {
 
 // 初始化凭证变量
 let credentials = {
-    username: 'admin',
-    password: 'admin'
+    username: USERNAME,
+    password: PASSWORD
 };
 
 // 身份验证中间件
@@ -55,11 +56,11 @@ app.get('/get-sub-token', auth, (req, res) => {
     res.json({ token: SUB_TOKEN });
 });
 
-// 根据用户名生成随机24位字符,并保持重启不变
+// 生成随机16位字符的函数
 function generateRandomString() {
-    const username = getSystemUsername();
-    const hash = crypto.createHash('md5').update(username).digest('hex');
-    return hash.slice(0, 24); 
+    const user = getSystemUsername();
+    const hash = crypto.createHash('md5').update(user).digest('hex');
+    return hash.slice(0, 20); // 截取前20位
 }
 
 // 获取系统用户名
@@ -82,10 +83,9 @@ async function initializeCredentialsFile() {
             return true;
         } catch {
             // 文件不存在，创建新文件
-            const username = getSystemUsername();
             const initialCredentials = {
-                username: username,
-                password: username
+                username: USERNAME,
+                password: PASSWORD
             };
             
             await fs.writeFile(
@@ -93,7 +93,7 @@ async function initializeCredentialsFile() {
                 JSON.stringify(initialCredentials, null, 2),
                 'utf8'
             );
-            console.log('Created new credentials file with system username');
+            console.log('Created new credentials file with environment variables or default admin credentials');
             return true;
         }
     } catch (error) {
@@ -111,10 +111,9 @@ async function loadCredentials() {
         return JSON.parse(data);
     } catch (error) {
         console.error('Error loading credentials:', error);
-        const username = getSystemUsername();
         return {
-            username: username,
-            password: username
+            username: USERNAME,
+            password: PASSWORD
         };
     }
 }
@@ -390,6 +389,7 @@ function cleanNodeString(str) {
         .trim();
 }
 
+// 删除订阅路由
 app.post('/admin/delete-subscription', async (req, res) => {
     try {
         const subsToDelete = req.body.subscription?.trim();
@@ -404,9 +404,9 @@ app.post('/admin/delete-subscription', async (req, res) => {
             return res.status(404).json({ error: 'No subscriptions found' });
         }
 
-        // 分割多行输入并清理每个订阅字符串
+        // 分割多行输入
         const deleteList = subsToDelete.split('\n')
-            .map(sub => cleanNodeString(sub)) 
+            .map(sub => sub.trim())
             .filter(sub => sub);
 
         // 记录删除结果
@@ -416,7 +416,7 @@ app.post('/admin/delete-subscription', async (req, res) => {
         // 处理每个要删除的订阅
         deleteList.forEach(subToDelete => {
             const index = subscriptions.findIndex(sub => 
-                cleanNodeString(sub) === subToDelete 
+                sub.trim() === subToDelete.trim()
             );
             if (index !== -1) {
                 deletedSubs.push(subToDelete);
@@ -425,7 +425,7 @@ app.post('/admin/delete-subscription', async (req, res) => {
                 notFoundSubs.push(subToDelete);
             }
         });
-
+        
         if (deletedSubs.length > 0) {
             await saveData(subscriptions, nodes);
             console.log('Subscriptions deleted. Remaining subscriptions:', subscriptions);
@@ -759,7 +759,6 @@ async function saveData(subs, nds) {
         throw error;
     }
 }
-
 // 订阅路由
 app.get(`/${SUB_TOKEN}`, async (req, res) => {
     try {
@@ -849,7 +848,7 @@ function replaceAddressAndPort(content) {
                 const nodeObj = JSON.parse(decoded);
 
                 // 检查是否为 ws 协议且带 TLS
-                if (nodeObj.net === 'ws' && nodeObj.tls === 'tls') {
+                if ((nodeObj.net === 'ws' || nodeObj.net === 'xhttp') && nodeObj.tls === 'tls') {
                     nodeObj.add = CFIP;
                     nodeObj.port = parseInt(CFPORT, 10);
                     return 'vmess://' + Buffer.from(JSON.stringify(nodeObj)).toString('base64');
@@ -862,7 +861,7 @@ function replaceAddressAndPort(content) {
         else if (line.startsWith('vless://') || line.startsWith('trojan://')) {
             try {
                 // 检查是否包含 ws 和 tls
-                if (line.includes('type=ws') && line.includes('security=tls')) {
+                if ((line.includes('type=ws') || line.includes('type=xhttp')) && line.includes('security=tls')) {
                     return line.replace(/@([\w.-]+):(\d+)/, (match, host) => {
                         return `@${CFIP}:${CFPORT}`;
                     });
