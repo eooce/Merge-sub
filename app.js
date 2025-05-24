@@ -314,6 +314,7 @@ function tryDecodeBase64(str) {
                 decoded.startsWith('hysteria://') ||
                 decoded.startsWith('hysteria2://') ||
                 decoded.startsWith('tuic://') ||
+                decoded.startsWith('anytls://') ||
                 decoded.startsWith('wireguard://') ||
                 decoded.startsWith('socks5://') ||
                 decoded.startsWith('http://') ||
@@ -862,9 +863,17 @@ function replaceAddressAndPort(content) {
             try {
                 // 检查是否包含 ws 和 tls
                 if ((line.includes('type=ws') || line.includes('type=xhttp')) && line.includes('security=tls')) {
-                    return line.replace(/@([\w.-]+):(\d+)/, (match, host) => {
-                        return `@${CFIP}:${CFPORT}`;
-                    });
+                    const url = new URL(line);
+                    const address = url.hostname;
+                    const params = new URLSearchParams(url.search);
+                    const host = params.get('host');
+
+                    // 只有当 host 存在且与 address 不同时才替换（即不替换直连节点）
+                    if (!host || host !== address) {
+                        return line.replace(/@([\w.-]+):(\d+)/, (match, host) => {
+                            return `@${CFIP}:${CFPORT}`;
+                        });
+                    }
                 }
             } catch (error) {
                 console.error('Error processing VLESS/Trojan node:', error);
