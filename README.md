@@ -35,19 +35,24 @@ ghcr.io/eooce/merge-sub:latest
 
 docker-compose.yaml
 ```bash
-version: '3.8'
+version: '3'
 
 services:
   merge-sub:
     image: ghcr.io/eooce/merge-sub:latest
     ports:
-      - 3000:3000
+      - "3000:3000"
+    volumes:
+      - merge-sub-data:/app/data
     environment:
+      - DATA_DIR=/app/data
       - PORT=3000
-      - USERNAME=admin
-      - PASSWORD=admin
+      - USERNAME=admin    # 管理账号
+      - PASSWORD=admin    # 管理密码
     restart: unless-stopped
-    command: "npm start"
+
+volumes:
+  merge-sub-data:
 ```
 
 
