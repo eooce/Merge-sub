@@ -13,13 +13,23 @@ const PASSWORD = process.env.PASSWORD || 'admin';
 const PORT = process.env.SERVER_PORT || process.env.PORT || 3000;
 const SUB_TOKEN = process.env.SUB_TOKEN || generateRandomString();
 
-let CFIP = process.env.CFIP || "www.visa.com.sg";
+let CFIP = process.env.CFIP || "time.is";
 let CFPORT = process.env.CFPORT || "443";
 let subscriptions = [];
 let nodes = '';
 
-const DATA_FILE = path.join(__dirname, 'data.json');
-const CREDENTIALS_FILE = path.join(__dirname, 'credentials.json');
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
+const DATA_FILE = path.join(DATA_DIR, 'data.json');
+const CREDENTIALS_FILE = path.join(DATA_DIR, 'credentials.json');
+
+// 检查数据目录
+async function ensureDataDir() {
+    try {
+        await fs.access(DATA_DIR);
+    } catch {
+        await fs.mkdir(DATA_DIR, { recursive: true });
+    }
+}
 
 // 初始化数据
 const initialData = {
@@ -889,6 +899,7 @@ function replaceAddressAndPort(content) {
 async function startServer() {
     try {
         // 初始化并加载凭证
+        await ensureDataDir();
         await initializeCredentialsFile();
         credentials = await loadCredentials();
         console.log('Credentials initialized and loaded successfully');
