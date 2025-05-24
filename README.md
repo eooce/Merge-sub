@@ -9,13 +9,13 @@
 
 ## 1: Serv00|ct8|hostuno一键部署命令
 * 默认用户名和密码都为admin，请及时更改
-```
+```bash
 bash <(curl -Ls https://raw.githubusercontent.com/eooce/Merge-sub/main/install.sh)
 ```
 
 ## 2: vps一键部署，
 * 需nodejs环境
-```
+```bash
 apt update -y
 curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && install nodejs
 apt get-install git screen -y
@@ -27,8 +27,26 @@ screen npm start
 
 ## 3: Docker镜像一键部署,容器平台等
 
+环境变量(可选)：`PORT`  `USERNAME`  `PASSWORD`  `SUB_TOKEN`
+
 ```
 ghcr.io/eooce/merge-sub:latest
+```
+
+docker-compose.yaml
+```bash
+version: '3.8'
+
+services:
+  merge-sub:
+    image: ghcr.io/eooce/merge-sub:latest
+    ports:
+      - 3000:3000
+    environment:
+      - PORT=3000
+      - USERNAME=admin
+      - PASSWORD=admin
+    command: "npm start"
 ```
 
 
