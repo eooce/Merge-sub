@@ -89,13 +89,28 @@ async function fetchData() {
         const data = await response.json();
         console.log('Fetched data:', data);
         
-        const formattedData = {
-            subscriptions: Array.isArray(data.subscriptions) ? data.subscriptions : [],
-            nodes: Array.isArray(data.nodes) ? data.nodes : []
-        };
+        let formattedText = '<div style="margin-top: 0; padding-top: 0"><h2 style="margin: 1px 0; color: #007bff">subscriptions:</h2>';
+        if (Array.isArray(data.subscriptions)) {
+            formattedText += data.subscriptions.join('\n');
+        }
         
-        document.getElementById('data').textContent = 
-            JSON.stringify(formattedData, null, 2);
+        formattedText += '<h2 style="margin: 1px 0; color: #007bff">nodes:</h2>';
+        if (typeof data.nodes === 'string') {
+            const formattedNodes = data.nodes.split('\n').map(node => {
+                return node.replace(/(vmess|vless|trojan|ss|ssr|snell|juicity|hysteria|hysteria2|tuic|anytls|wireguard|socks5|https?):\/\//g, 
+                    (match) => `<strong style="color: #dc3545">${match}</strong>`);
+            }).join('\n');
+            formattedText += formattedNodes;
+        } else if (Array.isArray(data.nodes)) {
+            const formattedNodes = data.nodes.map(node => {
+                return node.replace(/(vmess|vless|trojan|ss|ssr|snell|juicity|hysteria|hysteria2|tuic|anytls|wireguard|socks5|https?):\/\//g, 
+                    (match) => `<strong style="color: #dc3545">${match}</strong>`);
+            }).join('\n');
+            formattedText += formattedNodes;
+        }
+        formattedText += '</div>';
+        
+        document.getElementById('data').innerHTML = formattedText;
     } catch (error) {
         console.error('Error fetching data:', error);
         document.getElementById('data').textContent = 'Error loading data';
@@ -194,12 +209,12 @@ async function showSubscriptionInfo() {
         
         const customSubLine = createSubscriptionLine(
             '带优选IP订阅链接：',
-            `${currentDomain}/${subToken}?CFIP=www.visa.com.sg&CFPORT=443`
+            `${currentDomain}/${subToken}?CFIP=time.is&CFPORT=443`
         );
         
         const noteDiv = document.createElement('div');
         noteDiv.className = 'subscription-note';
-        noteDiv.textContent = '提醒：将www.visa.com.sg和443改为更快的优选ip或优选域名和对应的端口';
+        noteDiv.textContent = '提醒：将time.is和443改为更快的优选ip或优选域名和对应的端口';
         
         const closeButton = document.createElement('button');
         closeButton.className = 'alert-button';
