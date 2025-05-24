@@ -46,6 +46,7 @@ services:
       - PORT=3000
       - USERNAME=admin
       - PASSWORD=admin
+    restart: unless-stopped
     command: "npm start"
 ```
 
