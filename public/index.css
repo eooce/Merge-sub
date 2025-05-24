@@ -103,9 +103,9 @@ button {
 }
 
 #data {
-    height: 445px; 
+    height: 465px; 
     background: #f8f9fa;
-    padding: 15px;
+    padding: 5px 12px;
     border-radius: 4px;
     white-space: pre-wrap;
     word-break: break-all;
