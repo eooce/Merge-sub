@@ -83,6 +83,30 @@ async function addItem() {
     }
 }
 
+function copyToClipboard(element, text) { 
+    const textArea = document.createElement('textarea'); 
+    textArea.value = text; 
+    document.body.appendChild(textArea); 
+    
+    try { 
+        textArea.select(); 
+        document.execCommand('copy'); 
+        const copyIndicator = document.createElement('span');
+        copyIndicator.textContent = '已复制';
+        copyIndicator.style.color = '#10d23c';
+        copyIndicator.style.marginLeft = '5px';
+        copyIndicator.style.fontWeight = 'bold';
+        element.appendChild(copyIndicator);
+        setTimeout(() => { 
+            element.removeChild(copyIndicator);
+        }, 1000); 
+    } catch (err) { 
+        console.error('复制失败:', err); 
+    } finally { 
+        document.body.removeChild(textArea); 
+    } 
+} 
+
 async function fetchData() {
     try {
         const response = await fetch('/admin/data');
@@ -91,21 +115,25 @@ async function fetchData() {
         
         let formattedText = '<div style="margin-top: 0; padding-top: 0"><h2 style="margin: 1px 0; color: #007bff">subscriptions:</h2>';
         if (Array.isArray(data.subscriptions)) {
-            formattedText += data.subscriptions.join('\n');
+            formattedText += data.subscriptions.map(sub => 
+                `<div style="cursor: pointer" onclick="copyToClipboard(this, '${sub.replace(/'/g, "\\'")}')">${sub}</div>`
+            ).join('');
         }
         
         formattedText += '<h2 style="margin: 1px 0; color: #007bff">nodes:</h2>';
         if (typeof data.nodes === 'string') {
             const formattedNodes = data.nodes.split('\n').map(node => {
-                return node.replace(/(vmess|vless|trojan|ss|ssr|snell|juicity|hysteria|hysteria2|tuic|anytls|wireguard|socks5|https?):\/\//g, 
+                const formatted = node.replace(/(vmess|vless|trojan|ss|ssr|snell|juicity|hysteria|hysteria2|tuic|anytls|wireguard|socks5|https?):\/\//g, 
                     (match) => `<strong style="color: #dc3545">${match}</strong>`);
-            }).join('\n');
+                return `<div style="cursor: pointer" onclick="copyToClipboard(this, '${node.replace(/'/g, "\\'")}')">${formatted}</div>`;
+            }).join('');
             formattedText += formattedNodes;
         } else if (Array.isArray(data.nodes)) {
             const formattedNodes = data.nodes.map(node => {
-                return node.replace(/(vmess|vless|trojan|ss|ssr|snell|juicity|hysteria|hysteria2|tuic|anytls|wireguard|socks5|https?):\/\//g, 
+                const formatted = node.replace(/(vmess|vless|trojan|ss|ssr|snell|juicity|hysteria|hysteria2|tuic|anytls|wireguard|socks5|https?):\/\//g, 
                     (match) => `<strong style="color: #dc3545">${match}</strong>`);
-            }).join('\n');
+                return `<div style="cursor: pointer" onclick="copyToClipboard(this, '${node.replace(/'/g, "\\'")}')">${formatted}</div>`;
+            }).join('');
             formattedText += formattedNodes;
         }
         formattedText += '</div>';
