@@ -835,7 +835,7 @@ function decodeBase64Content(base64Content) {
 
 async function fetchSubscriptionContent(subscription) {
     try {
-        const response = await axios.get(subscription);
+        const response = await axios.get(subscription, { timeout: 10000 }); // 无效获取订阅10秒超时
         return response.data;
     } catch (error) {
         console.error(`Error fetching subscription content: ${error}`);
