@@ -1,6 +1,6 @@
 # Merge-sub
 将多个子订阅链接和单节点合并成一个订阅链接，可自定义优选域名或优选ip
-* 在线体验地址：https://merge.serv00.net   用户名和密码均为admin 演示站不要尝试改密码，已禁用
+* 在线体验地址：https://merge.eooce.ggff.net   用户名和密码均为admin 演示站不要尝试改密码，已禁用
 
 * 默认订阅：http://ip:端口/随机token 或 https://你的用户名.serv00.net/随机token
 * 带优选ip订阅：http://ip:端口/随机token?CFIP=优选ip&CFPORT=优选ip端口
@@ -27,7 +27,7 @@ screen npm start
 
 ## 3: Docker镜像一键部署,容器平台等
 
-环境变量(可选)：`PORT`  `USERNAME`  `PASSWORD`  `SUB_TOKEN`
+环境变量(可选)：`PORT`  `USERNAME`  `PASSWORD`  `SUB_TOKEN`  `API_URL`
 
 ```
 ghcr.io/eooce/merge-sub:latest
@@ -54,7 +54,14 @@ services:
 volumes:
   merge-sub-data:
 ```
+## 环境变量
 
+| 变量名     | 说明               | 默认值   | 是否必须 |
+|-----------|--------------------|----------|----------|
+| PORT      | 服务监听端口       | 3000     | 否|
+| USERNAME  | 登录用户名         | admin    |否|
+| PASSWORD  | 登录密码           | admin     |否|
+| API_URL   | 处理clash和singbox转换api| https://sublink.eooce.com |否|
 
 # 免责声明
 * 本程序仅供学习了解, 非盈利目的，请于下载后 24 小时内删除, 不得用作任何商业用途, 文字、数据及图片均有所属版权, 如转载须注明来源。
