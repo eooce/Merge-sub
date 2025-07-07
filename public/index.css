@@ -14,11 +14,11 @@ body {
 
 h1 {
     font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
-    font-size: 2.5em;
+    font-size: 2em;
     margin-bottom: 10px;
     margin-top: 0px;
     text-align: center;
-    color: #1f59ef;
+    color: #0b9275;
     margin-bottom: 20px;
 }
 
@@ -76,11 +76,19 @@ button {
 }
 
 .add-btn {
-    background: #007bff;
+    background: #2c89eb;
+}
+
+.add-btn:hover {
+    background: #0c6acf;
 }
 
 .delete-btn {
-    background: #dc3545;
+    background: #dd5260;
+}
+
+.delete-btn:hover {
+    background: #ba081a;
 }
 
 .view-sub-btn {
@@ -144,10 +152,10 @@ button {
 
 .subscription-url {
     word-break: break-all;
-    color: blue;
+    color: #0245ff;
     cursor: pointer;
     padding: 5px;
-    background: #fff;
+    background: #c3c3c3;
     border-radius: 3px;
     font-family: monospace;
 }
@@ -192,29 +200,86 @@ button {
     background: #555;
 }
 
+/* 优化右上角按钮排列和主题切换按钮样式 */
 .top-right {
     position: absolute;
     top: 10px;
     right: 10px;
     display: flex;
-    gap: 20px;
+    align-items: center;
+    flex-direction: row;
+    gap: 16px;
+    z-index: 10;
+}
+
+#theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    height: 28px;
+}
+
+#theme-icon i {
+    font-size: 22px;
+    color: #333;
+    transition: color 0.2s;
+}
+
+body.dark-theme #theme-icon i {
+    color: #162f30;
 }
 
 .top-right a {
     color: #666;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 15px;
     display: flex;
     align-items: center;
     gap: 5px;
+    padding: 0 4px;
+    height: 28px;
 }
 
 .top-right a:hover {
     text-decoration: underline;
 }
 
-.fa-github {
-    font-size: 16px;
+/* 夜间模式样式 */
+body.dark-theme {
+    background: #181818;
+    color: #eee;
+}
+body.dark-theme .container {
+    background: transparent;
+}
+body.dark-theme .section {
+    background: #232323;
+    color: #eee;
+}
+body.dark-theme textarea,
+body.dark-theme input {
+    background: #222;
+    color: #eee;
+    border-color: #444;
+}
+body.dark-theme button,
+body.dark-theme .add-btn,
+body.dark-theme .delete-btn,
+body.dark-theme .view-sub-btn {
+    color: #eee;
+}
+body.dark-theme #data,
+body.dark-theme .subscription-line {
+    background: #232323;
+    color: #eee;
+    border-color: #444;
+}
+body.dark-theme .subscription-info {
+    background: #232323;
+    color: #eee;
 }
 
 .alert-overlay {
@@ -241,6 +306,7 @@ button {
 .alert-message {
     margin-bottom: 15px;
     font-size: 16px;
+    color: black;
 }
 
 .alert-button {
@@ -260,7 +326,7 @@ button {
 
 .footer {
     text-align: center;
-    font-size: 12px;
+    font-size: 14px;
     color: #666;
 }
 
@@ -406,4 +472,47 @@ button {
     .top-right a {
         font-size: 12px;
     }
+}
+
+.change-password-btn {
+    color: #666;
+    text-decoration: none;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 4px;
+    height: 28px;
+    white-space: nowrap;
+}
+
+.change-password-btn:hover {
+    text-decoration: underline;
+}
+
+/* 自定义小月亮图标，内部填充黑色 */
+#theme-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#theme-icon .custom-moon {
+    display: block;
+    width: 22px;
+    height: 22px;
+}
+
+/* 夜间模式下图标变为太阳 */
+body.dark-theme #theme-icon .custom-moon {
+    display: none;
+}
+body.dark-theme #theme-icon .custom-sun {
+    display: block;
+    width: 22px;
+    height: 22px;
+    color: #fff;
+}
+
+#theme-icon .custom-sun {
+    display: none;
 }
