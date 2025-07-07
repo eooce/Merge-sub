@@ -1,4 +1,19 @@
 let subToken = ''; 
+let apiUrl = ''; 
+
+async function fetchApiUrl() {
+    try {
+        const response = await fetch('/get-apiurl');
+        if (response.ok) {
+            const data = await response.json();
+            apiUrl = data.ApiUrl || 'https://sublink.eooce.com'; // 兜底apiurl
+        } else {
+            apiUrl = 'https://sublink.eooce.com'; 
+        }
+    } catch (e) {
+        apiUrl = 'https://sublink.eooce.com';
+    }
+}
 
 async function fetchSubToken() {
     try {
@@ -93,7 +108,7 @@ function copyToClipboard(element, text) {
         document.execCommand('copy'); 
         const copyIndicator = document.createElement('span');
         copyIndicator.textContent = '已复制';
-        copyIndicator.style.color = '#10d23c';
+        copyIndicator.style.color = '#28a745';
         copyIndicator.style.marginLeft = '5px';
         copyIndicator.style.fontWeight = 'bold';
         element.appendChild(copyIndicator);
@@ -144,14 +159,13 @@ async function fetchData() {
         document.getElementById('data').textContent = 'Error loading data';
     }
 }
-
 async function deleteItem() {
     const input = document.getElementById('deleteInput').value.trim();
     if (!input) {
         showAlert('请输入要删除的订阅链接或节点');
         return;
     }
-
+    await fetchApiUrl();
     const isSubscription = input.startsWith('http://') || input.startsWith('https://');
     const endpoint = isSubscription ? '/admin/delete-subscription' : '/admin/delete-node';
     const body = isSubscription ? { subscription: input } : { node: input };
@@ -191,6 +205,8 @@ function createSubscriptionLine(label, url) {
     const copyIndicator = document.createElement('span');
     copyIndicator.className = 'copy-indicator';
     copyIndicator.textContent = '已复制';
+    copyIndicator.style.fontSize = '1rem';
+    copyIndicator.style.fontWeight = 'bold';
     
     line.appendChild(labelSpan);
     line.appendChild(urlDiv);
@@ -231,18 +247,29 @@ async function showSubscriptionInfo() {
         alertBox.className = 'alert-box subscription-info';
         
         const defaultSubLine = createSubscriptionLine(
-            '默认订阅链接：',
+            '默认订阅链接(base64)：',
             `${currentDomain}/${subToken}`
         );
         
         const customSubLine = createSubscriptionLine(
-            '带优选IP订阅链接：',
+            '带优选IP订阅链接(base64)：',
             `${currentDomain}/${subToken}?CFIP=time.is&CFPORT=443`
+        );
+
+        const clashSubLine = createSubscriptionLine(
+            'clash订阅(FIclash/Mihomo/ClashMeta)：',
+            `${apiUrl}/clash?config=${currentDomain}/${subToken}`
+        );
+
+        const singboxSubLine = createSubscriptionLine(
+            'sing-box订阅：',
+            `${apiUrl}/singbox?config=${currentDomain}/${subToken}`
         );
         
         const noteDiv = document.createElement('div');
         noteDiv.className = 'subscription-note';
-        noteDiv.textContent = '提醒：将time.is和443改为更快的优选ip或优选域名和对应的端口';
+        noteDiv.textContent = '提醒：将time.is和443改为更快的优选ip或优选域名和对应的端口。\n部署时可添加API_URL环境变量修改转换地址。\n订阅转换项目：https://github.com/eooce/sub-converter';
+        noteDiv.style.whiteSpace = 'pre-line';
         
         const closeButton = document.createElement('button');
         closeButton.className = 'alert-button';
@@ -252,6 +279,8 @@ async function showSubscriptionInfo() {
         
         alertBox.appendChild(defaultSubLine);
         alertBox.appendChild(customSubLine);
+        alertBox.appendChild(clashSubLine);
+        alertBox.appendChild(singboxSubLine);
         alertBox.appendChild(noteDiv);
         alertBox.appendChild(closeButton);
         overlay.appendChild(alertBox);
@@ -264,11 +293,43 @@ async function showSubscriptionInfo() {
         };
     } catch (error) {
         console.error('Error:', error);
-        showAlert('获取订阅信息失败，请确保已登录');
+        showAlert('获取订阅信息失败，请先登录');
     }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    await fetchApiUrl(); 
     await fetchSubToken();
     await fetchData();
 });
+
+// 主题切换功能
+(function() {
+  const themeToggle = document.getElementById('theme-toggle');
+  const themeIcon = document.getElementById('theme-icon');
+
+  // 主题切换svg按钮
+  const moonSVG = '<svg class="custom-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 1 0 9.79 9.79z" fill="#333"/></svg>';
+  const sunSVG = '<svg class="custom-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2"/><g stroke="#fff" stroke-width="2"><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></g></svg>';
+
+  function setTheme(theme) {
+    if (theme === 'dark') {
+      document.body.classList.add('dark-theme');
+      themeIcon.innerHTML = sunSVG + moonSVG;
+    } else {
+      document.body.classList.remove('dark-theme');
+      themeIcon.innerHTML = moonSVG + sunSVG;
+    }
+    localStorage.setItem('theme', theme);
+  }
+
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  setTheme(savedTheme);
+
+  if (themeToggle) {
+    themeToggle.addEventListener('click', function() {
+      const isDark = document.body.classList.contains('dark-theme');
+      setTheme(isDark ? 'light' : 'dark');
+    });
+  }
+})();
