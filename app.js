@@ -4,12 +4,14 @@ const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');
 const app = express();
+const os = require('os');
 const crypto = require('crypto');
 const basicAuth = require('basic-auth');
 const { execSync } = require('child_process');
 
 const USERNAME = process.env.USERNAME || 'admin';
 const PASSWORD = process.env.PASSWORD || 'admin';
+const API_URL = process.env.API_URL || 'https://sublink.eooce.com'; // 订阅转换地址
 const PORT = process.env.SERVER_PORT || process.env.PORT || 3000;
 const SUB_TOKEN = process.env.SUB_TOKEN || generateRandomString();
 
@@ -66,10 +68,19 @@ app.get('/get-sub-token', auth, (req, res) => {
     res.json({ token: SUB_TOKEN });
 });
 
-// 生成随机16位字符的函数
+// 获取 API_URL
+app.get('/get-apiurl', auth, (req, res) => {
+    res.json({ ApiUrl: API_URL });
+});
+
+// 生成随机20位字符的函数
 function generateRandomString() {
     const user = getSystemUsername();
-    const hash = crypto.createHash('md5').update(user).digest('hex');
+    const hostname = os.hostname();
+    
+    // 结合主机名和用户名生成唯一token
+    const uniqueString = `${hostname}-${user}`;
+    const hash = crypto.createHash('md5').update(uniqueString).digest('hex');
     return hash.slice(0, 20); // 截取前20位
 }
 
@@ -860,8 +871,11 @@ function replaceAddressAndPort(content) {
 
                 // 检查是否为 ws 协议且带 TLS
                 if ((nodeObj.net === 'ws' || nodeObj.net === 'xhttp') && nodeObj.tls === 'tls') {
-                    nodeObj.add = CFIP;
-                    nodeObj.port = parseInt(CFPORT, 10);
+                    // 只有当 host 不存在或与 address 不同时才替换
+                    if (!nodeObj.host || nodeObj.host !== nodeObj.add) {
+                        nodeObj.add = CFIP;
+                        nodeObj.port = parseInt(CFPORT, 10);
+                    }
                     return 'vmess://' + Buffer.from(JSON.stringify(nodeObj)).toString('base64');
                 }
             } catch (error) {
@@ -909,7 +923,7 @@ async function startServer() {
             console.log(`Server is running on port ${PORT}`);
             console.log(`Subscription route is /${SUB_TOKEN}`);
             console.log(`Admin page is available at /`);
-            console.log(`Initial credentials: username=${credentials.username}`);
+            console.log(`Initial credentials: username=${credentials.username} password=${credentials.password}`);
         });
     } catch (error) {
         console.error('Error starting server:', error);
