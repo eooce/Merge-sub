@@ -10,8 +10,13 @@
 <body>
     <div class="container">
         <div class="top-right">
-            <a href="/change-password.html">修改密码</a>
-             <a href="https://github.com/eooce/Merge-sub" target="_blank">
+            <button id="theme-toggle" title="切换主题" style="margin-top: -1px;">
+              <span id="theme-icon">
+                <i class="fa-regular fa-moon"></i>
+              </span>
+            </button>
+            <a href="/change-password.html" class="change-password-btn">修改密码</a>
+            <a href="https://github.com/eooce/Merge-sub" target="_blank">
                 <i class="fab fa-github"></i>GitHub
             </a>
         </div>
@@ -20,19 +25,19 @@
         <div class="row">
             <div class="column">
                 <div class="section input-section">
-                    <h2 style="color: green">Add Subscriptions or Nodes</h2>
-                    <textarea id="addInput" placeholder="Enter subscription URL(s) or node(s),support base64 nodes"></textarea>
+                    <h2 style="color: #0b9275">Add Subscriptions or Nodes</h2>
+                    <textarea id="addInput" placeholder="Enter subscription URL(s) or node(s),support base64"></textarea>
                     <button class="add-btn" onclick="addItem()">Add</button>
                 </div>
                 <div class="section input-section">
-                    <h2 style="color: red">Delete Subscriptions or Nodes</h2>
+                    <h2 style="color: #c92d3c">Delete Subscriptions or Nodes</h2>
                     <textarea id="deleteInput" placeholder="Enter subscription URL(s) or node(s) to delete"></textarea>
                     <button class="delete-btn" onclick="deleteItem()">Delete</button>
                 </div>
             </div>
             <div class="column">
                 <div class="section">
-                    <h2 style="color: rgb(31, 89, 239)">Current Subscriptions and Nodes</h2>
+                    <h2 style="color: #0b9275">Current Subscriptions and Nodes</h2>
                     <pre id="data"></pre>
                     <button class="view-sub-btn" onclick="showSubscriptionInfo()">
                         查看订阅链接
