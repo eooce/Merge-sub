@@ -49,6 +49,7 @@ services:
       - PORT=3000
       - USERNAME=admin    # 管理账号
       - PASSWORD=admin    # 管理密码
+      - API_URL=          # 处理clash和singbox转换api
     restart: unless-stopped
 
 volumes:
