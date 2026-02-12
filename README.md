@@ -1,6 +1,6 @@
 # Merge-sub
 
-这是一个用于合并和管理代理订阅的 Node.js 应用程序。它可以将多个订阅源合并为一个，并支持通过 URL 参数动态替换节点Cloudflare优选域名或IP和。
+这是一个用于合并和管理代理订阅的 Node.js 应用程序。它可以将多个订阅源合并为一个，并支持通过 URL 参数动态替换节点Cloudflare优选域名或IP。
 
 演示地址：<a href="https://merge.zabc.net" target="_blank">https://merge.zabc.net</a>
 
