@@ -1,5 +1,5 @@
-let subToken = ''; 
-let apiUrl = ''; 
+let subToken = '';
+let apiUrl = '';
 
 async function fetchApiUrl() {
     try {
@@ -8,7 +8,7 @@ async function fetchApiUrl() {
             const data = await response.json();
             apiUrl = data.ApiUrl || 'https://sublink.eooce.com'; // 兜底apiurl
         } else {
-            apiUrl = 'https://sublink.eooce.com'; 
+            apiUrl = 'https://sublink.eooce.com';
         }
     } catch (e) {
         apiUrl = 'https://sublink.eooce.com';
@@ -32,31 +32,31 @@ async function fetchSubToken() {
 function showAlert(message) {
     const overlay = document.createElement('div');
     overlay.className = 'alert-overlay';
-    
+
     const alertBox = document.createElement('div');
     alertBox.className = 'alert-box';
-    
+
     const messageDiv = document.createElement('div');
     messageDiv.className = 'alert-message';
     messageDiv.textContent = message;
-    messageDiv.style.textAlign = 'center'; 
-    
+    messageDiv.style.textAlign = 'center';
+
     const button = document.createElement('button');
     button.className = 'alert-button';
     button.textContent = '确定';
-    button.style.margin = '10px auto'; 
-    button.style.display = 'block'; 
-    
-    button.onclick = function() {
+    button.style.margin = '10px auto';
+    button.style.display = 'block';
+
+    button.onclick = function () {
         document.body.removeChild(overlay);
     };
-    
+
     alertBox.appendChild(messageDiv);
     alertBox.appendChild(button);
     overlay.appendChild(alertBox);
     document.body.appendChild(overlay);
-    
-    overlay.onclick = function(e) {
+
+    overlay.onclick = function (e) {
         if (e.target === overlay) {
             document.body.removeChild(overlay);
         }
@@ -98,61 +98,61 @@ async function addItem() {
     }
 }
 
-function copyToClipboard(element, text) { 
-    const textArea = document.createElement('textarea'); 
-    textArea.value = text; 
-    document.body.appendChild(textArea); 
-    
-    try { 
-        textArea.select(); 
-        document.execCommand('copy'); 
+function copyToClipboard(element, text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+
+    try {
+        textArea.select();
+        document.execCommand('copy');
         const copyIndicator = document.createElement('span');
         copyIndicator.textContent = '已复制';
         copyIndicator.style.color = '#28a745';
         copyIndicator.style.marginLeft = '5px';
         copyIndicator.style.fontWeight = 'bold';
         element.appendChild(copyIndicator);
-        setTimeout(() => { 
+        setTimeout(() => {
             element.removeChild(copyIndicator);
-        }, 1000); 
-    } catch (err) { 
-        console.error('复制失败:', err); 
-    } finally { 
-        document.body.removeChild(textArea); 
-    } 
-} 
+        }, 1000);
+    } catch (err) {
+        console.error('复制失败:', err);
+    } finally {
+        document.body.removeChild(textArea);
+    }
+}
 
 async function fetchData() {
     try {
         const response = await fetch('/admin/data');
         const data = await response.json();
         console.log('Fetched data:', data);
-        
+
         let formattedText = '<div style="margin-top: 0; padding-top: 0"><h2 style="margin: 1px 0; color: #007bff">subscriptions:</h2>';
         if (Array.isArray(data.subscriptions)) {
-            formattedText += data.subscriptions.map(sub => 
+            formattedText += data.subscriptions.map(sub =>
                 `<div style="cursor: pointer" onclick="copyToClipboard(this, '${sub.replace(/'/g, "\\'")}')">${sub}</div>`
             ).join('');
         }
-        
+
         formattedText += '<h2 style="margin: 1px 0; color: #007bff">nodes:</h2>';
         if (typeof data.nodes === 'string') {
             const formattedNodes = data.nodes.split('\n').map(node => {
-                const formatted = node.replace(/(vmess|vless|trojan|ss|ssr|snell|juicity|hysteria|hysteria2|tuic|anytls|wireguard|socks5|https?):\/\//g, 
+                const formatted = node.replace(/(vmess|vless|trojan|ss|ssr|snell|juicity|hysteria|hysteria2|tuic|anytls|wireguard|socks5|https?):\/\//g,
                     (match) => `<strong style="color: #dc3545">${match}</strong>`);
                 return `<div style="cursor: pointer" onclick="copyToClipboard(this, '${node.replace(/'/g, "\\'")}')">${formatted}</div>`;
             }).join('');
             formattedText += formattedNodes;
         } else if (Array.isArray(data.nodes)) {
             const formattedNodes = data.nodes.map(node => {
-                const formatted = node.replace(/(vmess|vless|trojan|ss|ssr|snell|juicity|hysteria|hysteria2|tuic|anytls|wireguard|socks5|https?):\/\//g, 
+                const formatted = node.replace(/(vmess|vless|trojan|ss|ssr|snell|juicity|hysteria|hysteria2|tuic|anytls|wireguard|socks5|https?):\/\//g,
                     (match) => `<strong style="color: #dc3545">${match}</strong>`);
                 return `<div style="cursor: pointer" onclick="copyToClipboard(this, '${node.replace(/'/g, "\\'")}')">${formatted}</div>`;
             }).join('');
             formattedText += formattedNodes;
         }
         formattedText += '</div>';
-        
+
         document.getElementById('data').innerHTML = formattedText;
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -183,7 +183,7 @@ async function deleteItem() {
 
         document.getElementById('deleteInput').value = '';
         await fetchData();
-        
+
         showAlert(result.message || '删除成功');
     } catch (error) {
         console.error('删除时发生错误:', error);
@@ -194,24 +194,24 @@ async function deleteItem() {
 function createSubscriptionLine(label, url) {
     const line = document.createElement('div');
     line.className = 'subscription-line';
-    
+
     const labelSpan = document.createElement('span');
     labelSpan.textContent = label;
-    
+
     const urlDiv = document.createElement('div');
     urlDiv.className = 'subscription-url';
     urlDiv.textContent = url;
-    
+
     const copyIndicator = document.createElement('span');
     copyIndicator.className = 'copy-indicator';
     copyIndicator.textContent = '已复制';
     copyIndicator.style.fontSize = '1rem';
     copyIndicator.style.fontWeight = 'bold';
-    
+
     line.appendChild(labelSpan);
     line.appendChild(urlDiv);
     line.appendChild(copyIndicator);
-    
+
     urlDiv.onclick = async () => {
         try {
             await navigator.clipboard.writeText(url);
@@ -223,7 +223,7 @@ function createSubscriptionLine(label, url) {
             console.error('复制失败:', err);
         }
     };
-    
+
     return line;
 }
 
@@ -234,30 +234,30 @@ async function showSubscriptionInfo() {
             showAlert('请先登录');
             return;
         }
-        
+
         const data = await response.json();
         subToken = data.token;
-        
+
         const currentDomain = window.location.origin;
-        
+
         const overlay = document.createElement('div');
         overlay.className = 'alert-overlay';
-        
+
         const alertBox = document.createElement('div');
         alertBox.className = 'alert-box subscription-info';
-        
+
         const defaultSubLine = createSubscriptionLine(
-            '默认订阅链接(base64)：',
+            '订阅链接(base64),适用于V2rayN(G)/Karing/Nekoray/Shadowrocket等：',
             `${currentDomain}/${subToken}`
         );
-        
+
         const customSubLine = createSubscriptionLine(
-            '带优选IP订阅链接(base64)：',
+            '带优选域名或优选IP订阅链接(V2rayN(G)/Karing/Nekoray/Shadowrocket等)：',
             `${currentDomain}/${subToken}?CFIP=time.is&CFPORT=443`
         );
 
         const clashSubLine = createSubscriptionLine(
-            'clash订阅(FIclash/Mihomo/ClashMeta)：',
+            'Clash系列订阅(FIclash/FlyClash/Mihomo/ClashMeta等)：',
             `${apiUrl}/clash?config=${currentDomain}/${subToken}`
         );
 
@@ -265,18 +265,18 @@ async function showSubscriptionInfo() {
             'sing-box订阅：',
             `${apiUrl}/singbox?config=${currentDomain}/${subToken}`
         );
-        
+
         const noteDiv = document.createElement('div');
         noteDiv.className = 'subscription-note';
-        noteDiv.textContent = '提醒：将time.is和443改为更快的优选ip或优选域名和对应的端口。\n部署时可添加API_URL环境变量修改转换地址。\n订阅转换项目：https://github.com/eooce/sub-converter';
+        noteDiv.textContent = '提醒：time.is和443可改为更快的优选IP或优选域名和对应的端口。\n部署时可添加API_URL环境变量修改转换地址。\n订阅转换项目：https://github.com/eooce/sub-converter';
         noteDiv.style.whiteSpace = 'pre-line';
-        
+
         const closeButton = document.createElement('button');
         closeButton.className = 'alert-button';
         closeButton.textContent = '关闭';
         closeButton.style.width = '100%';
         closeButton.onclick = () => document.body.removeChild(overlay);
-        
+
         alertBox.appendChild(defaultSubLine);
         alertBox.appendChild(customSubLine);
         alertBox.appendChild(clashSubLine);
@@ -285,7 +285,7 @@ async function showSubscriptionInfo() {
         alertBox.appendChild(closeButton);
         overlay.appendChild(alertBox);
         document.body.appendChild(overlay);
-        
+
         overlay.onclick = (e) => {
             if (e.target === overlay) {
                 document.body.removeChild(overlay);
@@ -298,38 +298,38 @@ async function showSubscriptionInfo() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await fetchApiUrl(); 
+    await fetchApiUrl();
     await fetchSubToken();
     await fetchData();
 });
 
 // 主题切换功能
-(function() {
-  const themeToggle = document.getElementById('theme-toggle');
-  const themeIcon = document.getElementById('theme-icon');
+(function () {
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
 
-  // 主题切换svg按钮
-  const moonSVG = '<svg class="custom-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 1 0 9.79 9.79z" fill="#333"/></svg>';
-  const sunSVG = '<svg class="custom-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2"/><g stroke="#fff" stroke-width="2"><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></g></svg>';
+    // 主题切换svg按钮
+    const moonSVG = '<svg class="custom-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 1 0 9.79 9.79z" fill="#333"/></svg>';
+    const sunSVG = '<svg class="custom-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2"/><g stroke="#fff" stroke-width="2"><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></g></svg>';
 
-  function setTheme(theme) {
-    if (theme === 'dark') {
-      document.body.classList.add('dark-theme');
-      themeIcon.innerHTML = sunSVG + moonSVG;
-    } else {
-      document.body.classList.remove('dark-theme');
-      themeIcon.innerHTML = moonSVG + sunSVG;
+    function setTheme(theme) {
+        if (theme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeIcon.innerHTML = sunSVG + moonSVG;
+        } else {
+            document.body.classList.remove('dark-theme');
+            themeIcon.innerHTML = moonSVG + sunSVG;
+        }
+        localStorage.setItem('theme', theme);
     }
-    localStorage.setItem('theme', theme);
-  }
 
-  const savedTheme = localStorage.getItem('theme') || 'light';
-  setTheme(savedTheme);
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
 
-  if (themeToggle) {
-    themeToggle.addEventListener('click', function() {
-      const isDark = document.body.classList.contains('dark-theme');
-      setTheme(isDark ? 'light' : 'dark');
-    });
-  }
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function () {
+            const isDark = document.body.classList.contains('dark-theme');
+            setTheme(isDark ? 'light' : 'dark');
+        });
+    }
 })();
