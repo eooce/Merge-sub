@@ -15,8 +15,6 @@ const API_URL = process.env.API_URL || 'https://sublink.eooce.com'; // 订阅转
 const PORT = process.env.SERVER_PORT || process.env.PORT || 3000;
 const SUB_TOKEN = process.env.SUB_TOKEN || generateRandomString();
 
-let CFIP = process.env.CFIP || "time.is";
-let CFPORT = process.env.CFPORT || "443";
 let subscriptions = [];
 let nodes = '';
 
@@ -77,7 +75,7 @@ app.get('/get-apiurl', auth, (req, res) => {
 function generateRandomString() {
     const user = getSystemUsername();
     const hostname = os.hostname();
-    
+
     // 结合主机名和用户名生成唯一token
     const uniqueString = `${hostname}-${user}`;
     const hash = crypto.createHash('md5').update(uniqueString).digest('hex');
@@ -108,7 +106,7 @@ async function initializeCredentialsFile() {
                 username: USERNAME,
                 password: PASSWORD
             };
-            
+
             await fs.writeFile(
                 CREDENTIALS_FILE,
                 JSON.stringify(initialCredentials, null, 2),
@@ -127,7 +125,7 @@ async function initializeCredentialsFile() {
 async function loadCredentials() {
     try {
         await initializeCredentialsFile();
-        
+
         const data = await fs.readFile(CREDENTIALS_FILE, 'utf8');
         return JSON.parse(data);
     } catch (error) {
@@ -158,10 +156,10 @@ async function saveCredentials(newCredentials) {
 // 凭证更新路由
 app.post('/admin/update-credentials', auth, async (req, res) => {
     try {
-        console.log('Received update request:', req.body); 
+        console.log('Received update request:', req.body);
 
         const { username, password, currentPassword } = req.body;
-        
+
         // 验证请求数据是否存在
         if (!req.body || typeof req.body !== 'object') {
             return res.status(400).json({ error: '无效的请求数据' });
@@ -190,7 +188,7 @@ app.post('/admin/update-credentials', auth, async (req, res) => {
         }
 
         credentials = newCredentials;
-        
+
         console.log('Credentials updated successfully');
         res.json({ message: '密码修改成功' });
     } catch (error) {
@@ -251,13 +249,13 @@ async function loadData() {
     try {
         const data = await fs.readFile(DATA_FILE, 'utf8');
         const parsedData = JSON.parse(data);
-        
-        subscriptions = Array.isArray(parsedData.subscriptions) 
-            ? parsedData.subscriptions 
+
+        subscriptions = Array.isArray(parsedData.subscriptions)
+            ? parsedData.subscriptions
             : [];
-            
-        nodes = typeof parsedData.nodes === 'string' 
-            ? parsedData.nodes 
+
+        nodes = typeof parsedData.nodes === 'string'
+            ? parsedData.nodes
             : '';
 
         console.log('Data loaded successfully:', { subscriptions, nodes });
@@ -304,11 +302,11 @@ app.post('/admin/add-subscription', async (req, res) => {
         if (addedSubs.length > 0) {
             await saveData(subscriptions, nodes);
             console.log('Subscriptions added successfully. Current subscriptions:', subscriptions);
-            
-            const message = addedSubs.length === newSubscriptions.length 
-                ? '订阅添加成功' 
+
+            const message = addedSubs.length === newSubscriptions.length
+                ? '订阅添加成功'
                 : `成功添加 ${addedSubs.length} 个订阅，${existingSubs.length} 个订阅已存在`;
-            
+
             res.status(200).json({ message });
         } else {
             res.status(400).json({ error: '所有订阅已存在' });
@@ -325,8 +323,8 @@ function tryDecodeBase64(str) {
     try {
         if (base64Regex.test(str)) {
             const decoded = Buffer.from(str, 'base64').toString('utf-8');
-            if (decoded.startsWith('vmess://') || 
-                decoded.startsWith('vless://') || 
+            if (decoded.startsWith('vmess://') ||
+                decoded.startsWith('vless://') ||
                 decoded.startsWith('trojan://') ||
                 decoded.startsWith('ss://') ||
                 decoded.startsWith('ssr://') ||
@@ -361,14 +359,14 @@ app.post('/admin/add-node', async (req, res) => {
             return res.status(400).json({ error: 'Node is required' });
         }
 
-        let nodesList = typeof nodes === 'string' 
+        let nodesList = typeof nodes === 'string'
             ? nodes.split('\n').map(n => n.trim()).filter(n => n)
             : [];
 
         const newNodes = newNode.split('\n')
             .map(n => n.trim())
             .filter(n => n)
-            .map(n => tryDecodeBase64(n)); 
+            .map(n => tryDecodeBase64(n));
 
         const addedNodes = [];
         const existingNodes = [];
@@ -387,11 +385,11 @@ app.post('/admin/add-node', async (req, res) => {
             nodes = nodesList.join('\n');
             await saveData(subscriptions, nodes);
             console.log('Node(s) added successfully');
-            
-            const message = addedNodes.length === newNodes.length 
-                ? '节点添加成功' 
+
+            const message = addedNodes.length === newNodes.length
+                ? '节点添加成功'
                 : `成功添加 ${addedNodes.length} 个节点，${existingNodes.length} 个节点已存在`;
-            
+
             res.status(200).json({ message });
         } else {
             res.status(400).json({ error: '所有节点已存在' });
@@ -437,7 +435,7 @@ app.post('/admin/delete-subscription', async (req, res) => {
 
         // 处理每个要删除的订阅
         deleteList.forEach(subToDelete => {
-            const index = subscriptions.findIndex(sub => 
+            const index = subscriptions.findIndex(sub =>
                 sub.trim() === subToDelete.trim()
             );
             if (index !== -1) {
@@ -447,15 +445,15 @@ app.post('/admin/delete-subscription', async (req, res) => {
                 notFoundSubs.push(subToDelete);
             }
         });
-        
+
         if (deletedSubs.length > 0) {
             await saveData(subscriptions, nodes);
             console.log('Subscriptions deleted. Remaining subscriptions:', subscriptions);
-            
-            const message = deletedSubs.length === deleteList.length 
-                ? '订阅删除成功' 
+
+            const message = deletedSubs.length === deleteList.length
+                ? '订阅删除成功'
                 : `成功删除 ${deletedSubs.length} 个订阅，${notFoundSubs.length} 个订阅不存在`;
-            
+
             res.status(200).json({ message });
         } else {
             res.status(404).json({ error: '未找到要删除的订阅' });
@@ -496,7 +494,7 @@ app.post('/admin/delete-node', async (req, res) => {
                 // 使用清理后的字符串进行比较
                 return cleanNodeString(node) === cleanNodeString(nodeToDelete);
             });
-            
+
             if (index !== -1) {
                 deletedNodes.push(nodeToDelete);
                 nodesList.splice(index, 1);
@@ -510,11 +508,11 @@ app.post('/admin/delete-node', async (req, res) => {
             nodes = nodesList.join('\n');
             await saveData(subscriptions, nodes);
             console.log('Nodes deleted. Remaining nodes:', nodes);
-            
-            const message = deletedNodes.length === deleteList.length 
-                ? '节点删除成功' 
+
+            const message = deletedNodes.length === deleteList.length
+                ? '节点删除成功'
                 : `成功删除 ${deletedNodes.length} 个节点，${notFoundNodes.length} 个节点不存在`;
-            
+
             res.status(200).json({ message });
         } else {
             res.status(404).json({ error: '未找到要删除的节点' });
@@ -580,7 +578,7 @@ app.post('/api/add-subscriptions', async (req, res) => {
 app.post('/api/add-nodes', async (req, res) => {
     try {
         const newNodes = req.body.nodes;
-        
+
         if (!newNodes) {
             return res.status(400).json({ error: 'Nodes are required' });
         }
@@ -634,7 +632,7 @@ app.post('/api/add-nodes', async (req, res) => {
 app.delete('/api/delete-subscriptions', async (req, res) => {
     try {
         const subsToDelete = req.body.subscription;
-        
+
         if (!subsToDelete) {
             return res.status(400).json({ error: 'Subscription URL is required' });
         }
@@ -644,8 +642,8 @@ app.delete('/api/delete-subscriptions', async (req, res) => {
             return res.status(404).json({ error: 'No subscriptions found' });
         }
 
-        const deleteList = Array.isArray(subsToDelete) 
-            ? subsToDelete 
+        const deleteList = Array.isArray(subsToDelete)
+            ? subsToDelete
             : subsToDelete.split('\n');
 
         const processedSubs = deleteList
@@ -656,7 +654,7 @@ app.delete('/api/delete-subscriptions', async (req, res) => {
         const notFoundSubs = [];
 
         processedSubs.forEach(subToDelete => {
-            const index = subscriptions.findIndex(sub => 
+            const index = subscriptions.findIndex(sub =>
                 cleanNodeString(sub) === subToDelete
             );
             if (index !== -1) {
@@ -711,10 +709,10 @@ app.delete('/api/delete-nodes', async (req, res) => {
         const notFoundNodes = [];
 
         processedNodes.forEach(nodeToDelete => {
-            const index = nodesList.findIndex(node => 
+            const index = nodesList.findIndex(node =>
                 cleanNodeString(node) === cleanNodeString(nodeToDelete)
             );
-            
+
             if (index !== -1) {
                 deletedNodes.push(nodeToDelete);
                 nodesList.splice(index, 1);
@@ -770,10 +768,10 @@ async function saveData(subs, nds) {
             subscriptions: Array.isArray(subs) ? subs : [],
             nodes: typeof nds === 'string' ? nds : ''
         };
-        
+
         await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
         console.log('Data saved successfully:', data);
-        
+
         subscriptions = data.subscriptions;
         nodes = data.nodes;
     } catch (error) {
@@ -787,15 +785,9 @@ app.get(`/${SUB_TOKEN}`, async (req, res) => {
         const queryCFIP = req.query.CFIP;
         const queryCFPORT = req.query.CFPORT;
 
-        if (queryCFIP && queryCFPORT) {
-            CFIP = queryCFIP;
-            CFPORT = queryCFPORT;
-            console.log(`CFIP and CFPORT updated to ${CFIP}:${CFPORT}`);
-        }
-
         // 从文件重新读取最新数据
         await loadData();
-        const mergedSubscription = await generateMergedSubscription();
+        const mergedSubscription = await generateMergedSubscription(queryCFIP, queryCFPORT);
         const base64Content = Buffer.from(mergedSubscription).toString('base64');
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         res.send(`${base64Content}`);
@@ -806,19 +798,19 @@ app.get(`/${SUB_TOKEN}`, async (req, res) => {
 });
 
 // 首页
-app.get('/', function(req, res) {
+app.get('/', function (req, res) {
     res.send('Hello world!');
 });
 
 // 生成合并订阅
-async function generateMergedSubscription() {
+async function generateMergedSubscription(targetCFIP, targetCFPORT) {
     try {
         const promises = subscriptions.map(async (subscription) => {
             try {
                 const subscriptionContent = await fetchSubscriptionContent(subscription);
                 if (subscriptionContent) {
                     const decodedContent = decodeBase64Content(subscriptionContent);
-                    const updatedContent = replaceAddressAndPort(decodedContent);
+                    const updatedContent = replaceAddressAndPort(decodedContent, targetCFIP, targetCFPORT);
                     return updatedContent;
                 }
             } catch (error) {
@@ -830,7 +822,7 @@ async function generateMergedSubscription() {
         const mergedContentArray = await Promise.all(promises);
         const mergedContent = mergedContentArray.filter(content => content !== null).join('\n');
 
-        const updatedNodes = replaceAddressAndPort(nodes);
+        const updatedNodes = replaceAddressAndPort(nodes, targetCFIP, targetCFPORT);
         return `${mergedContent}\n${updatedNodes}`;
     } catch (error) {
         console.error(`Error generating merged subscription: ${error}`);
@@ -854,8 +846,8 @@ async function fetchSubscriptionContent(subscription) {
     }
 }
 
-function replaceAddressAndPort(content) {
-    if (!CFIP || !CFPORT) {
+function replaceAddressAndPort(content, targetCFIP, targetCFPORT) {
+    if (!targetCFIP || !targetCFPORT) {
         return content;
     }
 
@@ -873,8 +865,8 @@ function replaceAddressAndPort(content) {
                 if ((nodeObj.net === 'ws' || nodeObj.net === 'xhttp') && nodeObj.tls === 'tls') {
                     // 只有当 host 不存在或与 address 不同时才替换
                     if (!nodeObj.host || nodeObj.host !== nodeObj.add) {
-                        nodeObj.add = CFIP;
-                        nodeObj.port = parseInt(CFPORT, 10);
+                        nodeObj.add = targetCFIP;
+                        nodeObj.port = parseInt(targetCFPORT, 10);
                     }
                     return 'vmess://' + Buffer.from(JSON.stringify(nodeObj)).toString('base64');
                 }
@@ -895,7 +887,7 @@ function replaceAddressAndPort(content) {
                     // 只有当 host 存在且与 address 不同时才替换（即不替换直连节点）
                     if (!host || host !== address) {
                         return line.replace(/@([\w.-]+):(\d+)/, (match, host) => {
-                            return `@${CFIP}:${CFPORT}`;
+                            return `@${targetCFIP}:${targetCFPORT}`;
                         });
                     }
                 }
