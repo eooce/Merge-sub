@@ -7,7 +7,7 @@
 ## 功能特点
 
 -   **订阅合并**：支持合并多个 VMess、VLESS、Trojan Hysteria2、Anytls、ss等所有协议的订阅链接。
--   **节点管理**：支持手动添加自定义节点。
+-   **节点管理**：支持手动添加自定义节点,支持api自动添加单节点或订阅。
 -   **动态替换**：通过 URL 参数 `?CFIP=...&CFPORT=...` 动态替换节点的地址和端口，不修改原始配置。
 -   **Web 管理界面**：提供简单的 Web 界面用于管理订阅和节点。
 -   **Docker 支持**：提供 Docker 镜像，方便快速部署。
@@ -118,7 +118,111 @@ docker-compose up -d
 
 将这个链接导入到你的代理软件（如 V2RayN(G), Karing, Nekoray, Shadowrocket 等）中即可。
 
-## 注意事项
+
+## API 接口
+
+本项目提供了 RESTful API 接口，用于程序化地管理订阅和节点。
+
+### API 列表
+
+#### 1. 添加订阅
+- **接口**: `POST /api/add-subscriptions`
+- **描述**: 添加一个或多个订阅链接
+- **请求体**:
+  ```json
+  {
+    "subscription": "https://example.com/sub1\nhttps://example.com/sub2"
+  }
+  ```
+  或
+  ```json
+  {
+    "subscription": ["https://example.com/sub1", "https://example.com/sub2"]
+  }
+  ```
+- **响应**:
+  ```json
+  {
+    "success": true,
+    "added": ["https://example.com/sub1"],
+    "existing": ["https://example.com/sub2"]
+  }
+  ```
+
+#### 2. 添加节点
+- **接口**: `POST /api/add-nodes`
+- **描述**: 添加一个或多个节点
+- **请求体**:
+  ```json
+  {
+    "nodes": "vmess://xxx\nvless://xxx"
+  }
+  ```
+  或
+  ```json
+  {
+    "nodes": ["vmess://xxx", "vless://xxx"]
+  }
+  ```
+- **响应**:
+  ```json
+  {
+    "success": true,
+    "added": ["vmess://xxx"],
+    "existing": ["vless://xxx"]
+  }
+  ```
+
+#### 3. 删除订阅
+- **接口**: `DELETE /api/delete-subscriptions`
+- **描述**: 删除一个或多个订阅链接
+- **请求体**:
+  ```json
+  {
+    "subscription": "https://example.com/sub1\nhttps://example.com/sub2"
+  }
+  ```
+  或
+  ```json
+  {
+    "subscription": ["https://example.com/sub1", "https://example.com/sub2"]
+  }
+  ```
+- **响应**:
+  ```json
+  {
+    "success": true,
+    "deleted": ["https://example.com/sub1"],
+    "notFound": ["https://example.com/sub2"]
+  }
+  ```
+
+#### 4. 删除节点
+- **接口**: `DELETE /api/delete-nodes`
+- **描述**: 删除一个或多个节点
+- **请求体**:
+  ```json
+  {
+    "nodes": "vmess://xxx\nvless://xxx"
+  }
+  ```
+  或
+  ```json
+  {
+    "nodes": ["vmess://xxx", "vless://xxx"]
+  }
+  ```
+- **响应**:
+  ```json
+  {
+    "success": true,
+    "deleted": ["vmess://xxx"],
+    "notFound": ["vless://xxx"]
+  }
+  ```
+
+
+### 注意事项
 - Docker 部署时，请挂载数据目录，否则每次重启后都会丢失数据。
 - 默认的订阅转换地址为：https://sublink.eooce.com，你可以在启动时通过设置环境变量 API_URL 来修改它。
 - 默认的订阅路径的Token为：根据主机名和用户名自动生成，你可以在启动时通过设置环境变量 SUB_TOKEN 来修改它。
